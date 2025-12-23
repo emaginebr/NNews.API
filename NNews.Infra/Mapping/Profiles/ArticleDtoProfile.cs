@@ -36,6 +36,7 @@ namespace NNews.Infra.Mapping.Profiles
                             src.CategoryId,
                             src.AuthorId,
                             (ArticleStatus)src.Status,
+                            src.DateAt,
                             src.CreatedAt,
                             src.UpdatedAt
                         );

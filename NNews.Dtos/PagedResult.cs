@@ -10,19 +10,19 @@ namespace NNews.Dtos
         [JsonPropertyName("page")]
         public int Page { get; set; }
 
-        [JsonPropertyName("page_size")]
+        [JsonPropertyName("pageSize")]
         public int PageSize { get; set; }
 
-        [JsonPropertyName("total_count")]
+        [JsonPropertyName("totalCount")]
         public int TotalCount { get; set; }
 
-        [JsonPropertyName("total_pages")]
+        [JsonPropertyName("totalPages")]
         public int TotalPages { get; set; }
 
-        [JsonPropertyName("has_previous")]
+        [JsonPropertyName("hasPrevious")]
         public bool HasPrevious => Page > 1;
 
-        [JsonPropertyName("has_next")]
+        [JsonPropertyName("hasNext")]
         public bool HasNext => Page < TotalPages;
     }
 }

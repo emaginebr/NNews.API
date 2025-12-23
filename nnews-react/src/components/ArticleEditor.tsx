@@ -21,27 +21,23 @@ export function ArticleEditor({
   loading = false,
 }: ArticleEditorProps) {
   const [title, setTitle] = useState('');
-  const [subtitle, setSubtitle] = useState('');
-  const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
   const [status, setStatus] = useState<ArticleStatus>(ArticleStatus.Draft);
-  const [author, setAuthor] = useState('');
   const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [dateAt, setDateAt] = useState<string>('');
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
-  const [visibleToRoles, setVisibleToRoles] = useState<string>('');
+  const [roleIds, setRoleIds] = useState<string>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (article) {
       setTitle(article.title);
-      setSubtitle(article.subtitle || '');
-      setExcerpt(article.excerpt || '');
       setContent(article.content);
       setStatus(article.status);
-      setAuthor(article.author || '');
-      setCategoryId(article.category?.id || null);
-      setSelectedTagIds(article.tags?.map((t) => t.id) || []);
-      setVisibleToRoles(article.visibleToRoles?.join(', ') || '');
+      setCategoryId(article.categoryId || null);
+      setDateAt(article.dateAt ? new Date(article.dateAt).toISOString().slice(0, 16) : '');
+      setSelectedTagIds(article.tags?.map((t) => t.tagId).filter((id): id is number => id !== undefined) || []);
+      setRoleIds(article.roles?.map((r) => r.slug).join(', ') || '');
     }
   }, [article]);
 
@@ -67,25 +63,23 @@ export function ArticleEditor({
       return;
     }
 
-    const roles = visibleToRoles
+    const roles = roleIds
       .split(',')
       .map((r) => r.trim())
       .filter((r) => r.length > 0);
 
     const articleData = {
       title: title.trim(),
-      subtitle: subtitle.trim() || undefined,
-      excerpt: excerpt.trim() || undefined,
       content: content.trim(),
       status,
-      author: author.trim() || undefined,
       categoryId: categoryId || undefined,
+      dateAt: dateAt || undefined,
       tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
-      visibleToRoles: roles.length > 0 ? roles : undefined,
+      roleIds: roles.length > 0 ? roles : undefined,
     };
 
     if (article) {
-      await onSave({ id: article.id, ...articleData } as ArticleUpdate);
+      await onSave({ articleId: article.articleId, ...articleData } as ArticleUpdate);
     } else {
       await onSave(articleData as ArticleInput);
     }
@@ -124,36 +118,6 @@ export function ArticleEditor({
           {errors.title && <p className="text-sm text-red-600">{errors.title}</p>}
         </div>
 
-        {/* Subtitle */}
-        <div className="mt-4 space-y-2">
-          <label htmlFor="subtitle" className="block text-sm font-medium text-gray-700">
-            Subtitle
-          </label>
-          <input
-            id="subtitle"
-            type="text"
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="Enter article subtitle (optional)"
-          />
-        </div>
-
-        {/* Excerpt */}
-        <div className="mt-4 space-y-2">
-          <label htmlFor="excerpt" className="block text-sm font-medium text-gray-700">
-            Excerpt
-          </label>
-          <textarea
-            id="excerpt"
-            value={excerpt}
-            onChange={(e) => setExcerpt(e.target.value)}
-            rows={3}
-            className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="Brief summary of the article (optional)"
-          />
-        </div>
-
         {/* Content */}
         <div className="mt-4">
           <MarkdownEditor
@@ -165,18 +129,17 @@ export function ArticleEditor({
           />
         </div>
 
-        {/* Author */}
+        {/* Date */}
         <div className="mt-4 space-y-2">
-          <label htmlFor="author" className="block text-sm font-medium text-gray-700">
-            Author
+          <label htmlFor="dateAt" className="block text-sm font-medium text-gray-700">
+            Publication Date
           </label>
           <input
-            id="author"
-            type="text"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
+            id="dateAt"
+            type="datetime-local"
+            value={dateAt}
+            onChange={(e) => setDateAt(e.target.value)}
             className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="Enter author name (optional)"
           />
         </div>
 
@@ -196,6 +159,8 @@ export function ArticleEditor({
               <option value={ArticleStatus.Draft}>Draft</option>
               <option value={ArticleStatus.Published}>Published</option>
               <option value={ArticleStatus.Archived}>Archived</option>
+              <option value={ArticleStatus.Scheduled}>Scheduled</option>
+              <option value={ArticleStatus.Review}>Review</option>
             </select>
           </div>
 
@@ -212,7 +177,7 @@ export function ArticleEditor({
             >
               <option value="">No Category</option>
               {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
+                <option key={cat.categoryId} value={cat.categoryId}>
                   {cat.title}
                 </option>
               ))}
@@ -227,11 +192,11 @@ export function ArticleEditor({
             <div className="flex flex-wrap gap-2">
               {tags.map((tag) => (
                 <button
-                  key={tag.id}
+                  key={tag.tagId}
                   type="button"
-                  onClick={() => handleTagToggle(tag.id)}
+                  onClick={() => handleTagToggle(tag.tagId || 0)}
                   className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
-                    selectedTagIds.includes(tag.id)
+                    selectedTagIds.includes(tag.tagId || 0)
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
@@ -243,21 +208,21 @@ export function ArticleEditor({
           </div>
         )}
 
-        {/* Visible to Roles */}
+        {/* Roles */}
         <div className="mt-4 space-y-2">
           <label htmlFor="roles" className="block text-sm font-medium text-gray-700">
-            Visible to Roles
+            Roles
           </label>
           <input
             id="roles"
             type="text"
-            value={visibleToRoles}
-            onChange={(e) => setVisibleToRoles(e.target.value)}
+            value={roleIds}
+            onChange={(e) => setRoleIds(e.target.value)}
             className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="Enter roles separated by commas (e.g., Admin, Editor)"
+            placeholder="Enter role slugs separated by commas (e.g., admin, editor)"
           />
           <p className="text-xs text-gray-500">
-            Leave empty for public access. Comma-separated list of roles.
+            Comma-separated list of role slugs.
           </p>
         </div>
 

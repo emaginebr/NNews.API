@@ -1,22 +1,17 @@
-export const APP_NAME = 'NAuth Demo';
-export const APP_DESCRIPTION = 'Complete authentication and user management demo using nauth-react';
+export const APP_NAME = 'NNews';
+export const APP_DESCRIPTION = 'Content management system with articles, categories, and tags powered by nnews-react';
 
 export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
-  REGISTER: '/register',
-  FORGOT_PASSWORD: '/forgot-password',
-  RESET_PASSWORD: '/reset-password',
   DASHBOARD: '/dashboard',
   PROFILE: '/profile',
-  CHANGE_PASSWORD: '/change-password',
-  SEARCH_USERS: '/search-users',
-  ROLES: '/roles',
-  USER_EDIT: '/user-edit',
+  TAGS: '/tags',
+  CATEGORIES: '/categories',
 } as const;
 
 export const EXTERNAL_LINKS = {
   TERMS: '/terms',
   PRIVACY: '/privacy',
-  DOCS: 'https://github.com/your-repo/nauth-react',
+  DOCS: 'https://github.com/News',
 } as const;

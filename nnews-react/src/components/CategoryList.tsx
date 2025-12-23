@@ -1,4 +1,5 @@
 import type { Category } from '../types/news';
+import { Edit2, Trash2 } from 'lucide-react';
 
 export interface CategoryListProps {
   categories: Category[];
@@ -48,94 +49,71 @@ export function CategoryList({
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {categories.map((category) => (
-        <div
-          key={category.id}
-          className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h3
-                className={`text-lg font-semibold text-gray-900 ${
-                  onCategoryClick ? 'cursor-pointer hover:text-blue-600' : ''
-                }`}
-                onClick={() => onCategoryClick?.(category)}
-              >
-                {category.title}
-              </h3>
-
-              {category.description && (
-                <p className="mt-1 text-sm text-gray-600">{category.description}</p>
-              )}
-
-              {category.slug && (
-                <p className="mt-2 text-xs font-mono text-gray-400">{category.slug}</p>
-              )}
-
-              {category.visibleToRoles && category.visibleToRoles.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {category.visibleToRoles.map((role, index) => (
-                    <span
-                      key={index}
-                      className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800"
-                    >
-                      {role}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {showActions && (onEditClick || onDeleteClick) && (
-              <div className="ml-2 flex gap-1">
-                {onEditClick && (
-                  <button
-                    onClick={() => onEditClick(category)}
-                    className="rounded p-1.5 text-blue-600 hover:bg-blue-50"
-                    title="Edit"
-                  >
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
-                  </button>
-                )}
-                {onDeleteClick && (
-                  <button
-                    onClick={() => onDeleteClick(category)}
-                    className="rounded p-1.5 text-red-600 hover:bg-red-50"
-                    title="Delete"
-                  >
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                )}
-              </div>
+    <div className="w-full overflow-x-auto">
+      <table className="w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
+        <thead className="bg-gray-50 dark:bg-gray-800">
+          <tr>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[40%]">
+              Title
+            </th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[20%]">
+              Articles
+            </th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[25%]">
+              Parent
+            </th>
+            {showActions && (
+              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[15%]">
+                Actions
+              </th>
             )}
-          </div>
-        </div>
-      ))}
+          </tr>
+        </thead>
+        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+          {categories.map((category) => (
+            <tr key={category.categoryId} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                <div
+                  className={onCategoryClick ? 'cursor-pointer hover:text-blue-600 dark:hover:text-blue-400' : ''}
+                  onClick={() => onCategoryClick?.(category)}
+                >
+                  {category.title}
+                </div>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                {category.articleCount || 0}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                {category.parentId ? `Parent ID: ${category.parentId}` : '-'}
+              </td>
+              {showActions && (
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                  <div className="flex justify-end gap-2">
+                    {onEditClick && (
+                      <button
+                        onClick={() => onEditClick(category)}
+                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                        title="Edit"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                    )}
+                    {onDeleteClick && (
+                      <button
+                        onClick={() => onDeleteClick(category)}
+                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

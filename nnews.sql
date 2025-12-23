@@ -33,6 +33,7 @@ CREATE TABLE articles (
     article_id bigint NOT NULL DEFAULT nextval('article_id_seq'::regclass),
     category_id bigint NOT NULL,
     author_id bigint,
+    date_at timestamp without time zone NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
     title character varying(255) NOT NULL,

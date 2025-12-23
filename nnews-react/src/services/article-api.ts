@@ -22,11 +22,13 @@ export class ArticleAPI {
     if (categoryId) {
       params.categoryId = categoryId;
     }
+    console.log('[ArticleAPI] listArticles - Request:', { url: NEWS_API_ENDPOINTS.ARTICLES, params });
 
     const response = await this.client.get<PagedResult<Article>>(
       NEWS_API_ENDPOINTS.ARTICLES,
       { params }
     );
+    console.log('[ArticleAPI] listArticles - Response:', response.data);
 
     return this.transformArticleDates(response.data);
   }
@@ -73,10 +75,12 @@ export class ArticleAPI {
    * Create a new article
    */
   async createArticle(article: ArticleInput): Promise<Article> {
+    console.log('[ArticleAPI] createArticle - Request:', { url: NEWS_API_ENDPOINTS.ARTICLES, data: article });
     const response = await this.client.post<Article>(
       NEWS_API_ENDPOINTS.ARTICLES,
       article
     );
+    console.log('[ArticleAPI] createArticle - Response:', response.data);
 
     return this.transformArticleDate(response.data);
   }
@@ -85,10 +89,12 @@ export class ArticleAPI {
    * Update an existing article
    */
   async updateArticle(article: ArticleUpdate): Promise<Article> {
+    console.log('[ArticleAPI] updateArticle - Request:', { url: NEWS_API_ENDPOINTS.ARTICLES, data: article });
     const response = await this.client.put<Article>(
       NEWS_API_ENDPOINTS.ARTICLES,
       article
     );
+    console.log('[ArticleAPI] updateArticle - Response:', response.data);
 
     return this.transformArticleDate(response.data);
   }
@@ -97,7 +103,9 @@ export class ArticleAPI {
    * Delete an article
    */
   async deleteArticle(id: number): Promise<void> {
+    console.log('[ArticleAPI] deleteArticle - Request:', { id, url: NEWS_API_ENDPOINTS.ARTICLE_BY_ID(id) });
     await this.client.delete(NEWS_API_ENDPOINTS.ARTICLE_BY_ID(id));
+    console.log('[ArticleAPI] deleteArticle - Success');
   }
 
   /**
@@ -106,6 +114,7 @@ export class ArticleAPI {
   private transformArticleDate(article: Article): Article {
     return {
       ...article,
+      dateAt: article.dateAt ? new Date(article.dateAt) : undefined,
       createdAt: article.createdAt ? new Date(article.createdAt) : undefined,
       updatedAt: article.updatedAt ? new Date(article.updatedAt) : undefined,
       category: article.category

@@ -1,4 +1,7 @@
-﻿namespace NNews.Infra.Context;
+﻿using System;
+using System.Collections.Generic;
+
+namespace NNews.Infra.Context;
 
 public partial class Article
 {
@@ -7,6 +10,8 @@ public partial class Article
     public long CategoryId { get; set; }
 
     public long? AuthorId { get; set; }
+
+    public DateTime DateAt { get; set; }
 
     public DateTime CreatedAt { get; set; }
 

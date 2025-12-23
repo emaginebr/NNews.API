@@ -7,6 +7,7 @@ namespace NNews.Domain.Entities.Interfaces
         long ArticleId { get; }
         long CategoryId { get; }
         long? AuthorId { get; }
+        DateTime DateAt { get; }
         DateTime CreatedAt { get; }
         DateTime UpdatedAt { get; }
         string Title { get; }
@@ -23,6 +24,8 @@ namespace NNews.Domain.Entities.Interfaces
         void Publish();
         void Draft();
         void Archive();
+        void Schedule(DateTime publishDate);
+        void PublishIfScheduled();
         void AddTag(ITagModel tag);
         void RemoveTag(long tagId);
         void AddRole(IRoleModel role);
@@ -30,6 +33,7 @@ namespace NNews.Domain.Entities.Interfaces
         bool IsPublished();
         bool IsDraft();
         bool IsArchived();
+        bool IsScheduled();
         int GetTagCount();
         int GetRoleCount();
     }

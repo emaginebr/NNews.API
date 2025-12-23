@@ -11,6 +11,7 @@ namespace NNews.Domain.Entities
         public long ArticleId { get; private set; }
         public long CategoryId { get; private set; }
         public long? AuthorId { get; private set; }
+        public DateTime DateAt { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
         public string Title { get; private set; }
@@ -37,6 +38,7 @@ namespace NNews.Domain.Entities
             if (authorId.HasValue)
                 SetAuthorId(authorId.Value);
             Status = status;
+            DateAt = DateTime.UtcNow;
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
         }
@@ -47,7 +49,7 @@ namespace NNews.Domain.Entities
         }
 
         public static ArticleModel Reconstruct(long articleId, string title, string content,
-            long categoryId, long? authorId, ArticleStatus status, DateTime createdAt, DateTime updatedAt)
+            long categoryId, long? authorId, ArticleStatus status, DateTime dateAt, DateTime createdAt, DateTime updatedAt)
         {
             var article = new ArticleModel
             {
@@ -57,6 +59,7 @@ namespace NNews.Domain.Entities
                 CategoryId = categoryId,
                 AuthorId = authorId,
                 Status = status,
+                DateAt = dateAt,
                 CreatedAt = createdAt,
                 UpdatedAt = updatedAt
             };
@@ -122,6 +125,29 @@ namespace NNews.Domain.Entities
             UpdateTimestamp();
         }
 
+        public void Schedule(DateTime publishDate)
+        {
+            if (publishDate <= DateTime.UtcNow)
+                throw new ArgumentException("Scheduled date must be in the future.", nameof(publishDate));
+
+            ValidateForPublishing();
+            Status = ArticleStatus.Scheduled;
+            DateAt = publishDate;
+            UpdateTimestamp();
+        }
+
+        public void PublishIfScheduled()
+        {
+            if (Status != ArticleStatus.Scheduled)
+                return;
+
+            if (DateAt <= DateTime.UtcNow)
+            {
+                Status = ArticleStatus.Published;
+                UpdateTimestamp();
+            }
+        }
+
         public void AddTag(ITagModel tag)
         {
             //if (tag.TagId <= 0)
@@ -168,6 +194,8 @@ namespace NNews.Domain.Entities
         public bool IsDraft() => Status == ArticleStatus.Draft;
 
         public bool IsArchived() => Status == ArticleStatus.Archived;
+
+        public bool IsScheduled() => Status == ArticleStatus.Scheduled;
 
         public int GetTagCount() => _tags.Count;
 
@@ -246,7 +274,8 @@ namespace NNews.Domain.Entities
 
         public override string ToString()
         {
-            return $"Article: {Title} (Status: {Status}) - {GetTagCount()} tags, {GetRoleCount()} roles";
+            var scheduledInfo = Status == ArticleStatus.Scheduled ? $" (Scheduled: {DateAt:u})" : string.Empty;
+            return $"Article: {Title} (Status: {Status}{scheduledInfo}) - {GetTagCount()} tags, {GetRoleCount()} roles";
         }
     }
 }

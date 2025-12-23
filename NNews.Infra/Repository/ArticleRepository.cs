@@ -99,12 +99,26 @@ namespace NNews.Infra.Repository
                 .Count(a => a.CategoryId == categoryId);
         }
 
+        public IEnumerable<IArticleModel> GetScheduledArticles()
+        {
+            var articles = _context.Articles
+                .AsNoTracking()
+                .Include(a => a.ArticleRoles)
+                .Include(a => a.Tags)
+                .Include(a => a.Category)
+                .Where(a => a.Status == (int)ArticleStatus.Scheduled && a.DateAt <= DateTime.UtcNow)
+                .ToList();
+
+            return _mapper.Map<IEnumerable<ArticleModel>>(articles);
+        }
+
         public IArticleModel Insert(IArticleModel articleModel)
         {
             if (articleModel == null)
                 throw new ArgumentNullException(nameof(articleModel));
 
             var article = _mapper.Map<Article>(articleModel);
+            article.DateAt = DateTime.SpecifyKind(articleModel.DateAt, DateTimeKind.Unspecified);
             article.CreatedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
             article.UpdatedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
 
@@ -155,6 +169,7 @@ namespace NNews.Infra.Repository
             existingArticle.Content = articleModel.Content;
             existingArticle.CategoryId = articleModel.CategoryId;
             existingArticle.Status = (int)articleModel.Status;
+            existingArticle.DateAt = DateTime.SpecifyKind(articleModel.DateAt, DateTimeKind.Unspecified);
             existingArticle.UpdatedAt = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
 
             existingArticle.Tags.Clear();

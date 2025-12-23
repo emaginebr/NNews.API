@@ -82,6 +82,9 @@ namespace NNews.Domain.Services
             if (article.CategoryId <= 0)
                 throw new ArgumentException("Article must have a valid category.", nameof(article.CategoryId));
 
+            if (article.DateAt == default)
+                article.DateAt = DateTime.UtcNow;
+
             var articleModel = _mapper.Map<ArticleModel>(article);
             var insertedArticle = _articleRepository.Insert(articleModel);
             return _mapper.Map<ArticleInfo>(insertedArticle);
@@ -101,9 +104,49 @@ namespace NNews.Domain.Services
             if (article.CategoryId <= 0)
                 throw new ArgumentException("Article must have a valid category.", nameof(article.CategoryId));
 
+            if (article.DateAt == default)
+                throw new ArgumentException("Article date cannot be empty.", nameof(article.DateAt));
+
             var articleModel = _mapper.Map<ArticleModel>(article);
             var updatedArticle = _articleRepository.Update(articleModel);
             return _mapper.Map<ArticleInfo>(updatedArticle);
+        }
+
+        public ArticleInfo Schedule(int articleId, DateTime publishDate)
+        {
+            if (publishDate <= DateTime.UtcNow)
+                throw new ArgumentException("Scheduled date must be in the future.", nameof(publishDate));
+
+            var articleModel = _articleRepository.GetById(articleId);
+            
+            if (articleModel == null)
+                throw new KeyNotFoundException($"Article with ID {articleId} not found.");
+
+            var mutableArticle = articleModel as ArticleModel;
+            if (mutableArticle == null)
+                throw new InvalidOperationException("Unable to modify article.");
+
+            mutableArticle.Schedule(publishDate);
+            var updatedArticle = _articleRepository.Update(mutableArticle);
+            return _mapper.Map<ArticleInfo>(updatedArticle);
+        }
+
+        public void PublishScheduledArticles()
+        {
+            var scheduledArticles = _articleRepository.GetScheduledArticles();
+
+            foreach (var article in scheduledArticles)
+            {
+                var mutableArticle = article as ArticleModel;
+                if (mutableArticle != null)
+                {
+                    mutableArticle.PublishIfScheduled();
+                    if (mutableArticle.IsPublished())
+                    {
+                        _articleRepository.Update(mutableArticle);
+                    }
+                }
+            }
         }
     }
 }

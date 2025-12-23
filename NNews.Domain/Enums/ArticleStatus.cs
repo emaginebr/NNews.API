@@ -4,6 +4,7 @@
     {
         Published = 1,
         Draft = 2,
-        Archived = 3
+        Archived = 3,
+        Scheduled = 4
     }
 }

@@ -39,13 +39,6 @@ export function UserMenu() {
             <User className="w-4 h-4" />
             Profile
           </Link>
-          <Link
-            to={ROUTES.CHANGE_PASSWORD}
-            className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white transition-colors"
-          >
-            <KeyRound className="w-4 h-4" />
-            Change Password
-          </Link>
         </div>
 
         <div className="border-t border-gray-200 dark:border-gray-700 p-2">

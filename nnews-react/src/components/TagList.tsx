@@ -1,4 +1,5 @@
 import type { Tag } from '../types/news';
+import { Edit2, Trash2, GitMerge } from 'lucide-react';
 
 export interface TagListProps {
   tags: Tag[];
@@ -7,6 +8,7 @@ export interface TagListProps {
   onTagClick?: (tag: Tag) => void;
   onEditClick?: (tag: Tag) => void;
   onDeleteClick?: (tag: Tag) => void;
+  onMergeClick?: (tag: Tag) => void;
   showActions?: boolean;
   emptyMessage?: string;
 }
@@ -18,6 +20,7 @@ export function TagList({
   onTagClick,
   onEditClick,
   onDeleteClick,
+  onMergeClick,
   showActions = false,
   emptyMessage = 'No tags found',
 }: TagListProps) {
@@ -51,7 +54,7 @@ export function TagList({
     <div className="flex flex-wrap gap-3">
       {tags.map((tag) => (
         <div
-          key={tag.id}
+          key={tag.tagId}
           className="group relative flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 shadow-sm hover:shadow-md transition-shadow"
         >
           <span
@@ -63,52 +66,39 @@ export function TagList({
             #{tag.title}
           </span>
 
-          {tag.slug && (
-            <span className="text-xs font-mono text-gray-400">({tag.slug})</span>
+          {tag.articleCount !== undefined && (
+            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+              {tag.articleCount}
+            </span>
           )}
 
-          {showActions && (onEditClick || onDeleteClick) && (
-            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {showActions && (onEditClick || onDeleteClick || onMergeClick) && (
+            <div className="flex gap-1 ml-2">
               {onEditClick && (
                 <button
                   onClick={() => onEditClick(tag)}
-                  className="rounded p-1 text-blue-600 hover:bg-blue-50"
+                  className="rounded p-1 text-blue-600 hover:bg-blue-50 transition-colors"
                   title="Edit"
                 >
-                  <svg
-                    className="h-3.5 w-3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    />
-                  </svg>
+                  <Edit2 className="h-4 w-4" />
+                </button>
+              )}
+              {onMergeClick && (
+                <button
+                  onClick={() => onMergeClick(tag)}
+                  className="rounded p-1 text-purple-600 hover:bg-purple-50 transition-colors"
+                  title="Merge"
+                >
+                  <GitMerge className="h-4 w-4" />
                 </button>
               )}
               {onDeleteClick && (
                 <button
                   onClick={() => onDeleteClick(tag)}
-                  className="rounded p-1 text-red-600 hover:bg-red-50"
+                  className="rounded p-1 text-red-600 hover:bg-red-50 transition-colors"
                   title="Delete"
                 >
-                  <svg
-                    className="h-3.5 w-3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
+                  <Trash2 className="h-4 w-4" />
                 </button>
               )}
             </div>

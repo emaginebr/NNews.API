@@ -9,5 +9,7 @@ namespace NNews.Domain.Services.Interfaces
         ArticleInfo GetById(int articleId);
         ArticleInfo Insert(ArticleInfo article);
         ArticleInfo Update(ArticleInfo article);
+        ArticleInfo Schedule(int articleId, DateTime publishDate);
+        void PublishScheduledArticles();
     }
 }

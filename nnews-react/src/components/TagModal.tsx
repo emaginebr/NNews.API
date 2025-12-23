@@ -60,7 +60,7 @@ export function TagModal({
 
     try {
       if (tag) {
-        await onSave({ id: tag.id, ...tagData } as TagUpdate);
+        await onSave({ tagId: tag.tagId, ...tagData } as TagUpdate);
       } else {
         await onSave(tagData as TagInput);
       }

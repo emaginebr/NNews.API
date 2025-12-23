@@ -83,13 +83,14 @@ namespace NNews.Domain.Entities
 
         private void SetSlug(string slug)
         {
-            if (string.IsNullOrWhiteSpace(slug))
-                throw new ArgumentException("Slug cannot be null or empty.", nameof(slug));
+            if (slug == null) { 
+                slug = string.Empty;
+            }
 
             if (slug.Length > 120)
                 throw new ArgumentException("Slug cannot exceed 120 characters.", nameof(slug));
 
-            if (!IsValidSlug(slug))
+            if (!string.IsNullOrWhiteSpace(slug) && !IsValidSlug(slug))
                 throw new ArgumentException("Slug must contain only lowercase letters, numbers, and hyphens.", nameof(slug));
 
             Slug = slug.Trim().ToLowerInvariant();

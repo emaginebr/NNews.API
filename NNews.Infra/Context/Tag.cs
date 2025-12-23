@@ -1,4 +1,7 @@
-﻿namespace NNews.Infra.Context;
+﻿using System;
+using System.Collections.Generic;
+
+namespace NNews.Infra.Context;
 
 public partial class Tag
 {

@@ -6,6 +6,8 @@ export enum ArticleStatus {
   Draft = 0,
   Published = 1,
   Archived = 2,
+  Scheduled = 3,
+  Review = 4,
 }
 
 // ============================================================================
@@ -18,7 +20,6 @@ export interface Role {
 }
 
 export interface Tag {
-  id: number;
   tagId?: number;
   title: string;
   slug?: string;
@@ -26,34 +27,27 @@ export interface Tag {
 }
 
 export interface Category {
-  id: number;
-  categoryId?: number;
+  categoryId: number;
   parentId?: number;
   title: string;
-  slug?: string;
-  description?: string;
-  visibleToRoles?: string[];
   createdAt?: Date;
   updatedAt?: Date;
   articleCount?: number;
 }
 
 export interface Article {
-  id: number;
-  articleId?: number;
+  articleId: number;
   categoryId?: number;
   authorId?: number;
   title: string;
-  subtitle?: string;
-  excerpt?: string;
   content: string;
   status: ArticleStatus;
-  author?: string;
-  category?: Category;
-  tags?: Tag[];
-  visibleToRoles?: string[];
+  dateAt?: string | Date;
   createdAt?: string | Date;
   updatedAt?: string | Date;
+  category?: Category;
+  tags?: Tag[];
+  roles?: Role[];
 }
 
 // ============================================================================
@@ -66,38 +60,31 @@ export interface TagInput {
 }
 
 export interface TagUpdate extends TagInput {
-  id: number;
-  tagId?: number;
+  tagId: number;
+  id?: number;
 }
 
 export interface CategoryInput {
   title: string;
-  slug?: string;
-  description?: string;
   parentId?: number;
-  visibleToRoles?: string[];
 }
 
 export interface CategoryUpdate extends CategoryInput {
-  id: number;
-  categoryId?: number;
+  categoryId: number;
 }
 
 export interface ArticleInput {
   title: string;
-  subtitle?: string;
-  excerpt?: string;
   content: string;
   status: ArticleStatus;
-  author?: string;
   categoryId?: number;
+  dateAt?: string | Date;
   tagIds?: number[];
-  visibleToRoles?: string[];
+  roleIds?: string[];
 }
 
 export interface ArticleUpdate extends ArticleInput {
-  id: number;
-  articleId?: number;
+  articleId: number;
 }
 
 // ============================================================================

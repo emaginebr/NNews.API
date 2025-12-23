@@ -14,7 +14,9 @@ export class CategoryAPI {
    * List all categories
    */
   async listCategories(): Promise<Category[]> {
+    console.log('[CategoryAPI] listCategories - Request:', { url: NEWS_API_ENDPOINTS.CATEGORIES });
     const response = await this.client.get<Category[]>(NEWS_API_ENDPOINTS.CATEGORIES);
+    console.log('[CategoryAPI] listCategories - Response:', response.data);
     return this.transformCategoryDates(response.data);
   }
 
@@ -55,10 +57,12 @@ export class CategoryAPI {
    * Create a new category
    */
   async createCategory(category: CategoryInput): Promise<Category> {
+    console.log('[CategoryAPI] createCategory - Request:', { url: NEWS_API_ENDPOINTS.CATEGORIES, data: category });
     const response = await this.client.post<Category>(
       NEWS_API_ENDPOINTS.CATEGORIES,
       category
     );
+    console.log('[CategoryAPI] createCategory - Response:', response.data);
 
     return this.transformCategoryDate(response.data);
   }
@@ -67,10 +71,12 @@ export class CategoryAPI {
    * Update an existing category
    */
   async updateCategory(category: CategoryUpdate): Promise<Category> {
+    console.log('[CategoryAPI] updateCategory - Request:', { url: NEWS_API_ENDPOINTS.CATEGORIES, data: category });
     const response = await this.client.put<Category>(
       NEWS_API_ENDPOINTS.CATEGORIES,
       category
     );
+    console.log('[CategoryAPI] updateCategory - Response:', response.data);
 
     return this.transformCategoryDate(response.data);
   }
@@ -79,7 +85,9 @@ export class CategoryAPI {
    * Delete a category
    */
   async deleteCategory(id: number): Promise<void> {
+    console.log('[CategoryAPI] deleteCategory - Request:', { id, url: NEWS_API_ENDPOINTS.CATEGORY_BY_ID(id) });
     await this.client.delete(NEWS_API_ENDPOINTS.CATEGORY_BY_ID(id));
+    console.log('[CategoryAPI] deleteCategory - Success');
   }
 
   /**

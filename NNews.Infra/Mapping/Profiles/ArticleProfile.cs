@@ -20,6 +20,7 @@ namespace NNews.Infra.Mapping.Profiles
                         src.CategoryId,
                         src.AuthorId,
                         (ArticleStatus)src.Status,
+                        src.DateAt,
                         src.CreatedAt,
                         src.UpdatedAt
                     );
@@ -59,6 +60,7 @@ namespace NNews.Infra.Mapping.Profiles
                 .ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId))
                 .ForMember(dest => dest.AuthorId, opt => opt.MapFrom(src => src.AuthorId))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => (int)src.Status))
+                .ForMember(dest => dest.DateAt, opt => opt.MapFrom(src => src.DateAt))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
                 .ForMember(dest => dest.Category, opt => opt.Ignore())

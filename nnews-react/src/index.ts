@@ -16,6 +16,7 @@ export { CategoryModal } from './components/CategoryModal';
 // News Components - Tags
 export { TagList } from './components/TagList';
 export { TagModal } from './components/TagModal';
+export { TagMerge } from './components/TagMerge';
 
 // Context Providers & Hooks
 export { NNewsProvider, useNNews } from './contexts/NNewsContext';
@@ -62,6 +63,8 @@ export type {
   TagListProps,
   TagModalProps,
 } from './types/news';
+
+export type { TagMergeProps } from './components/TagMerge';
 
 export { ArticleStatus } from './types/news';
 

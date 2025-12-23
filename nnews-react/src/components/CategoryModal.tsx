@@ -19,19 +19,13 @@ export function CategoryModal({
   loading = false,
 }: CategoryModalProps) {
   const [title, setTitle] = useState('');
-  const [slug, setSlug] = useState('');
-  const [description, setDescription] = useState('');
   const [parentId, setParentId] = useState<number | null>(null);
-  const [visibleToRoles, setVisibleToRoles] = useState<string>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (category) {
       setTitle(category.title);
-      setSlug(category.slug || '');
-      setDescription(category.description || '');
       setParentId(category.parentId || null);
-      setVisibleToRoles(category.visibleToRoles?.join(', ') || '');
     } else {
       resetForm();
     }
@@ -39,10 +33,7 @@ export function CategoryModal({
 
   const resetForm = () => {
     setTitle('');
-    setSlug('');
-    setDescription('');
     setParentId(null);
-    setVisibleToRoles('');
     setErrors({});
   };
 
@@ -64,22 +55,14 @@ export function CategoryModal({
       return;
     }
 
-    const roles = visibleToRoles
-      .split(',')
-      .map((r) => r.trim())
-      .filter((r) => r.length > 0);
-
     const categoryData = {
       title: title.trim(),
-      slug: slug.trim() || undefined,
-      description: description.trim() || undefined,
       parentId: parentId || undefined,
-      visibleToRoles: roles.length > 0 ? roles : undefined,
     };
 
     try {
       if (category) {
-        await onSave({ id: category.id, ...categoryData } as CategoryUpdate);
+        await onSave({ categoryId: category.categoryId, ...categoryData } as CategoryUpdate);
       } else {
         await onSave(categoryData as CategoryInput);
       }
@@ -92,7 +75,7 @@ export function CategoryModal({
   if (!isOpen) return null;
 
   // Filter out the current category from parent options to prevent self-referencing
-  const availableParents = categories.filter((c) => c.id !== category?.id);
+  const availableParents = categories.filter((c) => c.categoryId !== category?.categoryId);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -102,7 +85,6 @@ export function CategoryModal({
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Title */}
           <div className="space-y-2">
             <label htmlFor="title" className="block text-sm font-medium text-gray-700">
               Title *
@@ -120,40 +102,6 @@ export function CategoryModal({
             {errors.title && <p className="text-sm text-red-600">{errors.title}</p>}
           </div>
 
-          {/* Slug */}
-          <div className="space-y-2">
-            <label htmlFor="slug" className="block text-sm font-medium text-gray-700">
-              Slug
-            </label>
-            <input
-              id="slug"
-              type="text"
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="category-slug (optional)"
-            />
-            <p className="text-xs text-gray-500">
-              URL-friendly version of the title. Leave empty to auto-generate.
-            </p>
-          </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-              Description
-            </label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="Brief description (optional)"
-            />
-          </div>
-
-          {/* Parent Category */}
           {availableParents.length > 0 && (
             <div className="space-y-2">
               <label htmlFor="parent" className="block text-sm font-medium text-gray-700">
@@ -167,7 +115,7 @@ export function CategoryModal({
               >
                 <option value="">None (Top Level)</option>
                 {availableParents.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
+                  <option key={cat.categoryId} value={cat.categoryId}>
                     {cat.title}
                   </option>
                 ))}
@@ -175,25 +123,6 @@ export function CategoryModal({
             </div>
           )}
 
-          {/* Visible to Roles */}
-          <div className="space-y-2">
-            <label htmlFor="roles" className="block text-sm font-medium text-gray-700">
-              Visible to Roles
-            </label>
-            <input
-              id="roles"
-              type="text"
-              value={visibleToRoles}
-              onChange={(e) => setVisibleToRoles(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="Admin, Editor (comma-separated)"
-            />
-            <p className="text-xs text-gray-500">
-              Leave empty for public access. Comma-separated list of roles.
-            </p>
-          </div>
-
-          {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"

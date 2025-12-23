@@ -73,32 +73,9 @@ export function ArticleViewer({
         <header className="border-b border-gray-200 pb-6">
           <h1 className="text-4xl font-bold text-gray-900">{article.title}</h1>
 
-          {article.subtitle && (
-            <p className="mt-3 text-xl text-gray-600">{article.subtitle}</p>
-          )}
-
           {/* Meta Information */}
           <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-gray-500">
-            {article.author && (
-              <span className="flex items-center gap-2">
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-                {article.author}
-              </span>
-            )}
-
-            {article.createdAt && (
+            {article.dateAt && (
               <span className="flex items-center gap-2">
                 <svg
                   className="h-5 w-5"
@@ -113,7 +90,7 @@ export function ArticleViewer({
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                {new Date(article.createdAt).toLocaleDateString('en-US', {
+                {new Date(article.dateAt).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
@@ -133,10 +110,14 @@ export function ArticleViewer({
                   ? 'bg-green-100 text-green-800'
                   : article.status === ArticleStatus.Draft
                   ? 'bg-gray-100 text-gray-800'
-                  : 'bg-yellow-100 text-yellow-800'
+                  : article.status === ArticleStatus.Review
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : article.status === ArticleStatus.Scheduled
+                  ? 'bg-purple-100 text-purple-800'
+                  : 'bg-orange-100 text-orange-800'
               }`}
             >
-              {article.status}
+              {ArticleStatus[article.status]}
             </span>
           </div>
 
@@ -145,10 +126,24 @@ export function ArticleViewer({
             <div className="mt-4 flex flex-wrap gap-2">
               {article.tags.map((tag) => (
                 <span
-                  key={tag.id}
+                  key={tag.tagId}
                   className="rounded-md bg-gray-100 px-3 py-1 text-sm text-gray-700"
                 >
                   #{tag.title}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Roles */}
+          {article.roles && article.roles.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {article.roles.map((role) => (
+                <span
+                  key={role.slug}
+                  className="rounded-md bg-purple-100 px-3 py-1 text-sm text-purple-700"
+                >
+                  {role.name}
                 </span>
               ))}
             </div>

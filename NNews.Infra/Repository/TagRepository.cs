@@ -44,8 +44,9 @@ namespace NNews.Infra.Repository
 
         public ITagModel? GetBySlug(string slug)
         {
-            if (string.IsNullOrWhiteSpace(slug))
-                throw new ArgumentException("Slug cannot be null or empty.", nameof(slug));
+            if (string.IsNullOrWhiteSpace(slug)) {
+                return null;
+            }
 
             var tag = _context.Tags
                 .Include(t => t.Articles)

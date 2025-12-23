@@ -1,20 +1,16 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { NAuthProvider } from 'nauth-react';
+import { NNewsProvider } from 'nnews-react';
 import { Toaster } from 'sonner';
 //import 'nauth-react/styles';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
-import { RegisterPage } from './pages/RegisterPage';
-import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
-import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProfilePage } from './pages/ProfilePage';
-import { ChangePasswordPage } from './pages/ChangePasswordPage';
-import SearchUsersPage from './pages/SearchUsersPage';
-import RolesPage from './pages/RolesPage';
-import UserEditPage from './pages/UserEditPage';
+import TagsPage from './pages/TagsPage';
+import CategoryPage from './pages/CategoryPage';
 import { ROUTES } from './lib/constants';
 
 function App() {
@@ -30,15 +26,17 @@ function App() {
           },
         }}
       >
-        <Toaster position="bottom-right" richColors />
-        <Routes>
+        <NNewsProvider
+          config={{
+            apiUrl: import.meta.env.VITE_NNEWS_API_URL,
+          }}
+        >
+          <Toaster position="bottom-right" richColors />
+          <Routes>
           <Route element={<Layout />}>
             {/* Public Routes */}
             <Route path={ROUTES.HOME} element={<HomePage />} />
             <Route path={ROUTES.LOGIN} element={<LoginPage />} />
-            <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
-            <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
-            <Route path={`${ROUTES.RESET_PASSWORD}/:hash`} element={<ResetPasswordPage />} />
 
             {/* Protected Routes */}
             <Route
@@ -58,34 +56,18 @@ function App() {
               }
             />
             <Route
-              path={ROUTES.CHANGE_PASSWORD}
+              path={ROUTES.TAGS}
               element={
                 <ProtectedRoute>
-                  <ChangePasswordPage />
+                  <TagsPage />
                 </ProtectedRoute>
               }
             />
             <Route
-              path={ROUTES.SEARCH_USERS}
+              path={ROUTES.CATEGORIES}
               element={
                 <ProtectedRoute>
-                  <SearchUsersPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path={ROUTES.ROLES}
-              element={
-                <ProtectedRoute>
-                  <RolesPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path={ROUTES.USER_EDIT}
-              element={
-                <ProtectedRoute>
-                  <UserEditPage />
+                  <CategoryPage />
                 </ProtectedRoute>
               }
             />
@@ -94,6 +76,7 @@ function App() {
             <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
           </Route>
         </Routes>
+        </NNewsProvider>
       </NAuthProvider>
     </BrowserRouter>
   );

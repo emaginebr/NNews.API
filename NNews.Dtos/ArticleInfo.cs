@@ -5,15 +5,15 @@ namespace NNews.Dtos
 {
     public class ArticleInfo
     {
-        [JsonPropertyName("article_id")]
+        [JsonPropertyName("articleId")]
         public long ArticleId { get; set; }
 
         [Required(ErrorMessage = "CategoryId is required")]
         [Range(1, long.MaxValue, ErrorMessage = "CategoryId must be greater than 0")]
-        [JsonPropertyName("category_id")]
+        [JsonPropertyName("categoryId")]
         public long CategoryId { get; set; }
 
-        [JsonPropertyName("author_id")]
+        [JsonPropertyName("authorId")]
         public long? AuthorId { get; set; }
 
         [Required(ErrorMessage = "Title is required")]
@@ -25,14 +25,18 @@ namespace NNews.Dtos
         [JsonPropertyName("content")]
         public string Content { get; set; } = string.Empty;
 
-        [Range(0, 2, ErrorMessage = "Status must be 0 (Draft), 1 (Published), or 2 (Archived)")]
+        [Range(0, 4, ErrorMessage = "Status must be 0 (Draft), 1 (Published), 2 (Archived), 3 (Scheduled)")]
         [JsonPropertyName("status")]
         public int Status { get; set; }
 
-        [JsonPropertyName("created_at")]
+        [Required(ErrorMessage = "DateAt is required")]
+        [JsonPropertyName("dateAt")]
+        public DateTime DateAt { get; set; }
+
+        [JsonPropertyName("createdAt")]
         public DateTime CreatedAt { get; set; }
 
-        [JsonPropertyName("updated_at")]
+        [JsonPropertyName("updatedAt")]
         public DateTime UpdatedAt { get; set; }
 
         [JsonPropertyName("category")]

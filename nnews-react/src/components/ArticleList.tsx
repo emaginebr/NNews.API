@@ -51,7 +51,7 @@ export function ArticleList({
     <div className="space-y-4">
       {articles.items.map((article) => (
         <div
-          key={article.id}
+          key={article.articleId}
           className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-start justify-between">
@@ -65,35 +65,8 @@ export function ArticleList({
                 {article.title}
               </h3>
 
-              {article.subtitle && (
-                <p className="mt-1 text-sm text-gray-600">{article.subtitle}</p>
-              )}
-
-              {article.excerpt && (
-                <p className="mt-2 text-gray-700">{article.excerpt}</p>
-              )}
-
               <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                {article.author && (
-                  <span className="flex items-center gap-1">
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
-                    {article.author}
-                  </span>
-                )}
-
-                {article.createdAt && (
+                {article.dateAt && (
                   <span className="flex items-center gap-1">
                     <svg
                       className="h-4 w-4"
@@ -108,7 +81,7 @@ export function ArticleList({
                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                       />
                     </svg>
-                    {new Date(article.createdAt).toLocaleDateString()}
+                    {new Date(article.dateAt).toLocaleDateString()}
                   </span>
                 )}
 
@@ -124,10 +97,14 @@ export function ArticleList({
                       ? 'bg-green-100 text-green-800'
                       : article.status === ArticleStatus.Draft
                       ? 'bg-gray-100 text-gray-800'
-                      : 'bg-yellow-100 text-yellow-800'
+                      : article.status === ArticleStatus.Review
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : article.status === ArticleStatus.Scheduled
+                      ? 'bg-purple-100 text-purple-800'
+                      : 'bg-orange-100 text-orange-800'
                   }`}
                 >
-                  {article.status}
+                  {ArticleStatus[article.status]}
                 </span>
               </div>
 
@@ -135,10 +112,23 @@ export function ArticleList({
                 <div className="mt-3 flex flex-wrap gap-2">
                   {article.tags.map((tag) => (
                     <span
-                      key={tag.id}
+                      key={tag.tagId}
                       className="rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-700"
                     >
                       #{tag.title}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {article.roles && article.roles.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {article.roles.map((role) => (
+                    <span
+                      key={role.slug}
+                      className="rounded-md bg-purple-100 px-2 py-1 text-xs text-purple-700"
+                    >
+                      {role.name}
                     </span>
                   ))}
                 </div>

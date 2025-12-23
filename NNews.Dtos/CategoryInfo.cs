@@ -5,10 +5,10 @@ namespace NNews.Dtos
 {
     public class CategoryInfo
     {
-        [JsonPropertyName("category_id")]
+        [JsonPropertyName("categoryId")]
         public long CategoryId { get; set; }
 
-        [JsonPropertyName("parent_id")]
+        [JsonPropertyName("parentId")]
         public long? ParentId { get; set; }
 
         [Required(ErrorMessage = "Title is required")]
@@ -16,13 +16,13 @@ namespace NNews.Dtos
         [JsonPropertyName("title")]
         public string Title { get; set; } = string.Empty;
 
-        [JsonPropertyName("created_at")]
+        [JsonPropertyName("createdAt")]
         public DateTime CreatedAt { get; set; }
 
-        [JsonPropertyName("updated_at")]
+        [JsonPropertyName("updatedAt")]
         public DateTime UpdatedAt { get; set; }
 
-        [JsonPropertyName("article_count")]
+        [JsonPropertyName("articleCount")]
         public int ArticleCount { get; set; }
     }
 }

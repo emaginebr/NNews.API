@@ -1,6 +1,6 @@
 {
   "name": "nnews-react",
-  "version": "0.0.3",
+  "version": "0.0.6",
   "description": "React components for NAuth authentication and NNews content management system",
   "author": "Rodrigo Landim",
   "license": "MIT",
