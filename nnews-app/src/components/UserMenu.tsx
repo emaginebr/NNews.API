@@ -1,6 +1,6 @@
 import { useAuth } from 'nauth-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, User, KeyRound } from 'lucide-react';
+import { LogOut, User } from 'lucide-react';
 import { ROUTES } from '../lib/constants';
 
 export function UserMenu() {

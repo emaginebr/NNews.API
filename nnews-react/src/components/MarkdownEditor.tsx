@@ -26,21 +26,21 @@ export function MarkdownEditor({
   return (
     <div className="space-y-2">
       {label && (
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           {label}
         </label>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-gray-300 bg-white">
+      <div className="overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900">
         {/* Tab Headers */}
-        <div className="flex border-b border-gray-300 bg-gray-50">
+        <div className="flex border-b border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800">
           <button
             type="button"
             onClick={() => setActiveTab('edit')}
             className={`flex-1 px-4 py-2 text-sm font-medium ${
               activeTab === 'edit'
-                ? 'border-b-2 border-blue-600 bg-white text-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'border-b-2 border-blue-600 bg-white dark:bg-gray-900 text-blue-600 dark:text-blue-400'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
             Edit
@@ -50,8 +50,8 @@ export function MarkdownEditor({
             onClick={() => setActiveTab('preview')}
             className={`flex-1 px-4 py-2 text-sm font-medium ${
               activeTab === 'preview'
-                ? 'border-b-2 border-blue-600 bg-white text-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'border-b-2 border-blue-600 bg-white dark:bg-gray-900 text-blue-600 dark:text-blue-400'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
             Preview
@@ -65,11 +65,11 @@ export function MarkdownEditor({
               value={value}
               onChange={(e) => onChange(e.target.value)}
               placeholder={placeholder}
-              className="h-full w-full resize-none border-0 p-4 font-mono text-sm focus:outline-none focus:ring-0"
+              className="h-full w-full resize-none border-0 p-4 font-mono text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-0"
               style={{ minHeight }}
             />
           ) : (
-            <div className="prose max-w-none p-4">
+            <div className="prose dark:prose-invert max-w-none p-4 text-gray-900 dark:text-gray-100">
               {value ? (
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
@@ -78,17 +78,17 @@ export function MarkdownEditor({
                   {value}
                 </ReactMarkdown>
               ) : (
-                <div className="text-gray-400">Nothing to preview</div>
+                <div className="text-gray-400 dark:text-gray-500">Nothing to preview</div>
               )}
             </div>
           )}
         </div>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {/* Markdown Help */}
-      <div className="rounded-md bg-gray-50 p-3 text-xs text-gray-600">
+      <div className="rounded-md bg-gray-50 dark:bg-gray-800 p-3 text-xs text-gray-600 dark:text-gray-400">
         <p className="font-medium">Markdown Syntax Help:</p>
         <div className="mt-1 grid grid-cols-2 gap-2">
           <div>

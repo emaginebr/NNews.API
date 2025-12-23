@@ -29,13 +29,13 @@ export function ProfilePage() {
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mb-4">{user?.email}</p>
             <div className="flex flex-wrap gap-3">
-              <Link
-                to={ROUTES.CHANGE_PASSWORD}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              <button
+                disabled
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-400 text-gray-200 rounded-lg cursor-not-allowed opacity-60"
               >
                 <KeyRound className="w-4 h-4" />
                 Change Password
-              </Link>
+              </button>
             </div>
           </div>
         </div>

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from 'nauth-react';
 import { APP_NAME, ROUTES } from '../lib/constants';
 import { UserMenu } from './UserMenu';
-import { Shield, LayoutDashboard, Tag, FolderTree, Newspaper, ChevronDown } from 'lucide-react';
+import { Shield, LayoutDashboard, Tag, FolderTree, Newspaper, ChevronDown, FileText } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 export function Navbar() {
@@ -55,6 +55,14 @@ export function Navbar() {
                   
                   {newsMenuOpen && (
                     <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-2 z-50">
+                      <Link
+                        to={ROUTES.ARTICLES}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => setNewsMenuOpen(false)}
+                      >
+                        <FileText className="w-4 h-4" />
+                        Articles
+                      </Link>
                       <Link
                         to={ROUTES.CATEGORIES}
                         className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"

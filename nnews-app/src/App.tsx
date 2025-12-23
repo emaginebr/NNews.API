@@ -11,6 +11,8 @@ import { DashboardPage } from './pages/DashboardPage';
 import { ProfilePage } from './pages/ProfilePage';
 import TagsPage from './pages/TagsPage';
 import CategoryPage from './pages/CategoryPage';
+import { ArticleListPage } from './pages/ArticleListPage';
+import { ArticleEditPage } from './pages/ArticleEditPage';
 import { ROUTES } from './lib/constants';
 
 function App() {
@@ -68,6 +70,30 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CategoryPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path={ROUTES.ARTICLES}
+              element={
+                <ProtectedRoute>
+                  <ArticleListPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/articles/new"
+              element={
+                <ProtectedRoute>
+                  <ArticleEditPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/articles/edit/:id"
+              element={
+                <ProtectedRoute>
+                  <ArticleEditPage />
                 </ProtectedRoute>
               }
             />
