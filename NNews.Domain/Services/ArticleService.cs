@@ -18,16 +18,48 @@ namespace NNews.Domain.Services
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public IList<ArticleInfo> ListAll(long? categoryId)
+        public PagedResult<ArticleInfo> ListAll(long? categoryId, int page, int pageSize)
         {
-            var articles = _articleRepository.ListAll(categoryId);
-            return _mapper.Map<IList<ArticleInfo>>(articles);
+            if (page < 1)
+                page = 1;
+            if (pageSize < 1)
+                pageSize = 10;
+            if (pageSize > 100)
+                pageSize = 100;
+
+            var (items, totalCount) = _articleRepository.ListAll(categoryId, page, pageSize);
+            var articles = _mapper.Map<IList<ArticleInfo>>(items);
+
+            return new PagedResult<ArticleInfo>
+            {
+                Items = articles,
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+            };
         }
 
-        public IList<ArticleInfo> FilterByRolesAndParent(IList<string>? roles, long? parentId)
+        public PagedResult<ArticleInfo> FilterByRolesAndParent(IList<string>? roles, long? parentId, int page, int pageSize)
         {
-            var articles = _articleRepository.FilterByRolesAndParent(roles, parentId);
-            return _mapper.Map<IList<ArticleInfo>>(articles);
+            if (page < 1)
+                page = 1;
+            if (pageSize < 1)
+                pageSize = 10;
+            if (pageSize > 100)
+                pageSize = 100;
+
+            var (items, totalCount) = _articleRepository.FilterByRolesAndParent(roles, parentId, page, pageSize);
+            var articles = _mapper.Map<IList<ArticleInfo>>(items);
+
+            return new PagedResult<ArticleInfo>
+            {
+                Items = articles,
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+            };
         }
 
         public ArticleInfo GetById(int articleId)

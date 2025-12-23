@@ -24,6 +24,12 @@ namespace NNews.Infra.Mapping.Profiles
                         src.UpdatedAt
                     );
 
+                    if (src.Category != null)
+                    {
+                        var categoryModel = ctx.Mapper.Map<CategoryModel>(src.Category);
+                        article.SetCategory(categoryModel);
+                    }
+
                     if (src.Tags != null && src.Tags.Any())
                     {
                         foreach (var tag in src.Tags)

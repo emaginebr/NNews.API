@@ -19,7 +19,7 @@ namespace NNews.Infra.Repository
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public IEnumerable<IArticleModel> ListAll(long? categoryId)
+        public (IEnumerable<IArticleModel> Items, int TotalCount) ListAll(long? categoryId, int page, int pageSize)
         {
             IQueryable<Article> query = _context.Articles
                 .AsNoTracking()
@@ -32,14 +32,18 @@ namespace NNews.Infra.Repository
                 query = query.Where(a => a.CategoryId == categoryId.Value);
             }
 
+            var totalCount = query.Count();
+
             var articles = query
                 .OrderByDescending(a => a.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
-            return _mapper.Map<IEnumerable<ArticleModel>>(articles);
+            return (_mapper.Map<IEnumerable<ArticleModel>>(articles), totalCount);
         }
 
-        public IEnumerable<IArticleModel> FilterByRolesAndParent(IList<string>? roles, long? parentId)
+        public (IEnumerable<IArticleModel> Items, int TotalCount) FilterByRolesAndParent(IList<string>? roles, long? parentId, int page, int pageSize)
         {
             IQueryable<Article> query = _context.Articles
                 .AsNoTracking()
@@ -62,11 +66,15 @@ namespace NNews.Infra.Repository
                 query = query.Where(a => a.ArticleRoles.Any(ar => roles.Contains(ar.Slug)));
             }
 
+            var totalCount = query.Count();
+
             var articles = query
                 .OrderByDescending(a => a.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
-            return _mapper.Map<IEnumerable<ArticleModel>>(articles);
+            return (_mapper.Map<IEnumerable<ArticleModel>>(articles), totalCount);
         }
 
         public IArticleModel GetById(int id)

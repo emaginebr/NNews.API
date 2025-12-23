@@ -1,0 +1,589 @@
+# NNews NPM Package Creation Prompt
+
+## Project Overview
+Create an NPM package called **@ntools/nnews** that provides a complete React frontend solution for the NNews system. This package should follow the same architectural patterns and standards as the existing **@ntools/nauth** package.
+
+## Package Structure Requirements
+
+### 1. Package Configuration
+- Package name: `@ntools/nnews`
+- TypeScript-based implementation
+- React 18+ compatible
+- Export both ESM and CommonJS modules
+- Include TypeScript type definitions
+- Peer dependencies:
+  - react >= 18.0.0
+  - react-dom >= 18.0.0
+  - axios or similar HTTP client
+  - @ntools/nauth (for authentication integration)
+
+### 2. Core Architecture
+
+#### API Layer Structure
+Create separate API modules for each domain entity:
+
+**a) Article API (`src/api/articleApi.ts`)**
+```typescript
+- listArticles(categoryId?: number, page?: number, pageSize?: number): Promise<PagedResult<Article>>
+- filterArticles(roles?: string[], parentId?: number, page?: number, pageSize?: number): Promise<PagedResult<Article>>
+- getArticleById(id: number): Promise<Article>
+- createArticle(article: ArticleInput): Promise<Article>
+- updateArticle(article: ArticleUpdate): Promise<Article>
+- deleteArticle(id: number): Promise<void>
+```
+
+**b) Category API (`src/api/categoryApi.ts`)**
+```typescript
+- listCategories(): Promise<Category[]>
+- filterCategories(roles?: string[], parentId?: number): Promise<Category[]>
+- getCategoryById(id: number): Promise<Category>
+- createCategory(category: CategoryInput): Promise<Category>
+- updateCategory(category: CategoryUpdate): Promise<Category>
+- deleteCategory(id: number): Promise<void>
+```
+
+**c) Tag API (`src/api/tagApi.ts`)**
+```typescript
+- listTags(): Promise<Tag[]>
+- getTagById(id: number): Promise<Tag>
+- createTag(tag: TagInput): Promise<Tag>
+- updateTag(tag: TagUpdate): Promise<Tag>
+- deleteTag(id: number): Promise<void>
+- mergeTags(sourceTagId: number, targetTagId: number): Promise<void>
+```
+
+### 3. TypeScript Type Definitions
+
+#### Core Types (`src/types/index.ts`)
+
+**Article Types:**
+```typescript
+export enum ArticleStatus {
+  Draft = 0,
+  Published = 1,
+  Archived = 2
+}
+
+export interface Article {
+  articleId: number;
+  categoryId: number;
+  authorId?: number;
+  title: string;
+  content: string;
+  status: ArticleStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  category?: Category;
+  tags: Tag[];
+  roles: Role[];
+}
+
+export interface ArticleInput {
+  title: string;
+  content: string;
+  categoryId: number;
+  authorId?: number;
+  status?: ArticleStatus;
+  tags?: Tag[];
+  roles?: Role[];
+}
+
+export interface ArticleUpdate extends ArticleInput {
+  articleId: number;
+}
+```
+
+**Category Types:**
+```typescript
+export interface Category {
+  categoryId: number;
+  parentId?: number;
+  title: string;
+  createdAt: Date;
+  updatedAt: Date;
+  articleCount: number;
+}
+
+export interface CategoryInput {
+  title: string;
+  parentId?: number;
+}
+
+export interface CategoryUpdate extends CategoryInput {
+  categoryId: number;
+}
+```
+
+**Tag Types:**
+```typescript
+export interface Tag {
+  tagId: number;
+  title: string;
+  slug: string;
+  articleCount: number;
+}
+
+export interface TagInput {
+  title: string;
+  slug?: string;
+}
+
+export interface TagUpdate extends TagInput {
+  tagId: number;
+}
+```
+
+**Role Types:**
+```typescript
+export interface Role {
+  slug: string;
+  name: string;
+}
+```
+
+**Pagination Types:**
+```typescript
+export interface PagedResult<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+}
+```
+
+### 4. React Components
+
+#### Category Components
+
+**CategoryList Component (`src/components/Category/CategoryList.tsx`)**
+- Display paginated list of categories
+- Show category hierarchy (parent-child relationships)
+- Include article count per category
+- Search and filter functionality
+- Action buttons (Edit, Delete) per row
+- "Add Category" button opens modal
+- Responsive table/grid layout
+
+**CategoryModal Component (`src/components/Category/CategoryModal.tsx`)**
+- Modal dialog for create/edit operations
+- Fields:
+  - Title (required, max 240 characters)
+  - Parent Category (dropdown, optional)
+- Validation feedback
+- Save/Cancel buttons
+- Loading state during API calls
+
+#### Tag Components
+
+**TagList Component (`src/components/Tag/TagList.tsx`)**
+- Display paginated list of tags
+- Show article count per tag
+- Search functionality
+- Action buttons (Edit, Delete, Merge) per row
+- "Add Tag" button opens modal
+- Responsive table/grid layout
+
+**TagModal Component (`src/components/Tag/TagModal.tsx`)**
+- Modal dialog for create/edit operations
+- Fields:
+  - Title (required, max 120 characters)
+  - Slug (auto-generated, editable, max 120 characters)
+- Validation feedback
+- Save/Cancel buttons
+- Loading state during API calls
+
+#### Article Components
+
+**ArticleList Component (`src/components/Article/ArticleList.tsx`)**
+- Display paginated list of articles
+- Show article preview (title, excerpt, status, date)
+- Filter by category, status, tags
+- Search functionality
+- Status indicators (Draft, Published, Archived)
+- Action buttons (View, Edit, Delete) per row
+- "Create Article" button navigates to article form
+- Responsive card/list layout
+
+**ArticleEditor Component (`src/components/Article/ArticleEditor.tsx`)**
+- Full-page or embedded editor for create/edit operations
+- Fields:
+  - Title (required, max 255 characters)
+  - Content (Markdown editor, required)
+  - Category (dropdown, required)
+  - Tags (multi-select with autocomplete)
+  - Visibility Section:
+    * Radio options: "Public" or "Restrict by Roles"
+    * When "Restrict by Roles" selected: Show role multi-select
+    * Logic: If any roles selected, article is NOT public
+  - Status (Draft/Published/Archived)
+  - Author ID (optional, from auth context)
+- Markdown editor features:
+  - Live preview toggle
+  - Markdown toolbar (bold, italic, headers, lists, links, images, code)
+  - Split-screen or tabbed view (Edit/Preview)
+  - Syntax highlighting for code blocks
+- Validation feedback
+- Save/Publish/Cancel buttons
+- Auto-save draft functionality (optional)
+- Loading state during API calls
+
+**ArticleViewer Component (`src/components/Article/ArticleViewer.tsx`)**
+- Display rendered article content
+- Show metadata (title, author, date, category, tags, status)
+- Markdown content rendering with proper styling
+- Code syntax highlighting
+- Back/Edit buttons
+- Share functionality (optional)
+
+### 5. React Hooks
+
+**useArticles Hook (`src/hooks/useArticles.ts`)**
+```typescript
+export const useArticles = () => {
+  const [articles, setArticles] = useState<PagedResult<Article>>();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error>();
+
+  const fetchArticles = async (params) => { /* ... */ };
+  const createArticle = async (article: ArticleInput) => { /* ... */ };
+  const updateArticle = async (article: ArticleUpdate) => { /* ... */ };
+  const deleteArticle = async (id: number) => { /* ... */ };
+
+  return { articles, loading, error, fetchArticles, createArticle, updateArticle, deleteArticle };
+};
+```
+
+**useCategories Hook (`src/hooks/useCategories.ts`)**
+```typescript
+export const useCategories = () => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error>();
+
+  const fetchCategories = async () => { /* ... */ };
+  const createCategory = async (category: CategoryInput) => { /* ... */ };
+  const updateCategory = async (category: CategoryUpdate) => { /* ... */ };
+  const deleteCategory = async (id: number) => { /* ... */ };
+
+  return { categories, loading, error, fetchCategories, createCategory, updateCategory, deleteCategory };
+};
+```
+
+**useTags Hook (`src/hooks/useTags.ts`)**
+```typescript
+export const useTags = () => {
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error>();
+
+  const fetchTags = async () => { /* ... */ };
+  const createTag = async (tag: TagInput) => { /* ... */ };
+  const updateTag = async (tag: TagUpdate) => { /* ... */ };
+  const deleteTag = async (id: number) => { /* ... */ };
+  const mergeTags = async (sourceId: number, targetId: number) => { /* ... */ };
+
+  return { tags, loading, error, fetchTags, createTag, updateTag, deleteTag, mergeTags };
+};
+```
+
+### 6. Context Providers
+
+**NNewsProvider (`src/context/NNewsProvider.tsx`)**
+- Configure base API URL
+- Manage global loading/error states
+- Integrate with @ntools/nauth for authentication
+- Provide axios instance with auth interceptors
+- Handle API error responses globally
+
+### 7. UI Components Library Integration
+
+Support popular UI libraries with adapters:
+- Material-UI (MUI)
+- Ant Design
+- Chakra UI
+- Headless UI + Tailwind CSS
+- Bootstrap
+
+Provide base unstyled components and styled versions for each library.
+
+### 8. Markdown Editor Integration
+
+Include or support popular Markdown editors:
+- **React Markdown Editor** (recommended)
+- SimpleMDE
+- Toast UI Editor
+- Or provide adapter interface for custom editors
+
+Features required:
+- Live preview
+- Toolbar with common formatting options
+- Image upload support
+- Code syntax highlighting
+- Custom CSS class support
+
+### 9. Validation and Error Handling
+
+- Client-side validation matching backend rules:
+  - Title: required, max 255 chars (Article), max 240 chars (Category), max 120 chars (Tag)
+  - Content: required (Article)
+  - Slug: required, valid format (Tag)
+  - Category ID: required and > 0 (Article)
+- Display validation errors inline
+- Handle API errors gracefully
+- Show user-friendly error messages
+
+### 10. Internationalization (i18n)
+
+- Support for multiple languages
+- Default: English
+- Provide translation keys for all UI text
+- Easy integration with react-i18next or similar
+
+### 11. Accessibility
+
+- WCAG 2.1 Level AA compliance
+- Keyboard navigation support
+- Screen reader friendly
+- ARIA labels and roles
+- Focus management in modals
+
+### 12. Testing
+
+- Unit tests for hooks and utilities (Jest)
+- Component tests (React Testing Library)
+- API mock layer for testing
+- Minimum 80% code coverage
+
+### 13. Documentation
+
+**README.md:**
+- Installation instructions
+- Quick start guide
+- Configuration options
+- Component API documentation
+- Examples for each component
+- Integration with @ntools/nauth
+
+**Storybook:**
+- Interactive component playground
+- All component variants
+- Props documentation
+- Usage examples
+
+### 14. Build and Distribution
+
+- Build with Rollup or Vite
+- Generate TypeScript declarations
+- Tree-shakeable exports
+- Minified production builds
+- Source maps included
+- NPM package publishing pipeline
+
+### 15. Backend API Integration
+
+Configure API endpoints following NNews backend structure:
+
+**Base URL:** Configurable via NNewsProvider
+
+**Endpoints:**
+```
+Articles:
+- GET    /api/article?categoryId={id}&page={page}&pageSize={size}
+- GET    /api/article/filter?roles={roles}&parentId={id}&page={page}&pageSize={size}
+- GET    /api/article/{id}
+- POST   /api/article
+- PUT    /api/article
+- DELETE /api/article/{id}
+
+Categories:
+- GET    /api/category
+- GET    /api/category/filter?roles={roles}&parentId={id}
+- GET    /api/category/{id}
+- POST   /api/category
+- PUT    /api/category
+- DELETE /api/category/{id}
+
+Tags:
+- GET    /api/tag
+- GET    /api/tag/{id}
+- POST   /api/tag
+- PUT    /api/tag
+- DELETE /api/tag/{id}
+- POST   /api/tag/merge (body: { sourceTagId, targetTagId })
+```
+
+### 16. Role-Based Visibility Logic
+
+**Article Visibility Rules:**
+- If `roles` array is empty: Article is **Public**
+- If `roles` array has any items: Article is **Restricted to those roles**
+
+**UI Implementation:**
+- Radio button group: "Public" / "Restrict by Roles"
+- When "Public" selected: roles array = []
+- When "Restrict by Roles" selected: Show multi-select for roles
+- Integrate with @ntools/nauth to fetch available roles
+
+### 17. Additional Features
+
+**Article Features:**
+- Draft auto-save (localStorage)
+- Publish/Unpublish actions
+- Archive/Unarchive actions
+- Duplicate article
+- Preview before publishing
+- SEO metadata fields (optional)
+
+**Category Features:**
+- Drag-and-drop hierarchy management (optional)
+- Bulk operations
+- Category tree view
+
+**Tag Features:**
+- Tag cloud visualization
+- Tag merge functionality with confirmation
+- Popular tags display
+- Auto-suggest tags based on article content
+
+### 18. Performance Optimization
+
+- Lazy loading for editor components
+- Virtual scrolling for large lists
+- Debounced search inputs
+- Optimistic UI updates
+- Request caching with React Query or SWR
+- Image lazy loading in Markdown preview
+
+### 19. Security Considerations
+
+- XSS prevention in Markdown rendering
+- CSRF token handling (from @ntools/nauth)
+- Sanitize user inputs
+- Secure file uploads (if implemented)
+- Rate limiting awareness
+
+### 20. Package Exports
+
+Main entry point (`src/index.ts`):
+```typescript
+// Components
+export { ArticleList, ArticleEditor, ArticleViewer } from './components/Article';
+export { CategoryList, CategoryModal } from './components/Category';
+export { TagList, TagModal } from './components/Tag';
+
+// Hooks
+export { useArticles } from './hooks/useArticles';
+export { useCategories } from './hooks/useCategories';
+export { useTags } from './hooks/useTags';
+
+// Context
+export { NNewsProvider, useNNews } from './context/NNewsProvider';
+
+// Types
+export * from './types';
+
+// API (for advanced usage)
+export * as articleApi from './api/articleApi';
+export * as categoryApi from './api/categoryApi';
+export * as tagApi from './api/tagApi';
+```
+
+## Development Workflow
+
+1. **Setup Project Structure**
+   - Initialize NPM package with TypeScript
+   - Configure build tools (Rollup/Vite)
+   - Setup linting (ESLint) and formatting (Prettier)
+   - Configure Jest and React Testing Library
+
+2. **Implement Core Layer**
+   - Define TypeScript types
+   - Implement API layer
+   - Create axios instance with interceptors
+
+3. **Build React Hooks**
+   - Implement data fetching hooks
+   - Add error handling and loading states
+   - Include caching logic
+
+4. **Create Context Provider**
+   - Setup NNewsProvider
+   - Configure API base URL
+   - Integrate with @ntools/nauth
+
+5. **Develop Components**
+   - Start with presentational components
+   - Add business logic
+   - Implement modals and forms
+   - Build Markdown editor integration
+
+6. **Testing**
+   - Write unit tests for utilities and hooks
+   - Create component tests
+   - Mock API responses
+
+7. **Documentation**
+   - Write comprehensive README
+   - Create Storybook stories
+   - Add inline code documentation
+
+8. **Build and Publish**
+   - Generate production build
+   - Test package locally with npm link
+   - Publish to NPM registry
+
+## Example Usage
+
+```typescript
+import { NNewsProvider, ArticleList, ArticleEditor, CategoryList, TagList } from '@ntools/nnews';
+import { NAuthProvider } from '@ntools/nauth';
+
+function App() {
+  return (
+    <NAuthProvider apiUrl="https://api.example.com">
+      <NNewsProvider apiUrl="https://api.example.com">
+        <Router>
+          <Routes>
+            <Route path="/articles" element={<ArticleList />} />
+            <Route path="/articles/new" element={<ArticleEditor />} />
+            <Route path="/articles/edit/:id" element={<ArticleEditor />} />
+            <Route path="/categories" element={<CategoryList />} />
+            <Route path="/tags" element={<TagList />} />
+          </Routes>
+        </Router>
+      </NNewsProvider>
+    </NAuthProvider>
+  );
+}
+```
+
+## Design Principles
+
+1. **Consistency with NAuth:** Follow the same patterns, naming conventions, and architecture as @ntools/nauth
+2. **Developer Experience:** Easy to integrate, well-documented, TypeScript-first
+3. **Flexibility:** Support multiple UI libraries, customizable styling, headless components option
+4. **Performance:** Optimized for large datasets, efficient rendering, smart caching
+5. **Accessibility:** WCAG compliant, keyboard navigation, screen reader support
+6. **Security:** Input sanitization, XSS prevention, secure API communication
+7. **Maintainability:** Clean code, comprehensive tests, clear documentation
+
+## Quality Checklist
+
+- [ ] TypeScript definitions for all exports
+- [ ] Unit tests with >80% coverage
+- [ ] Component tests for all UI components
+- [ ] Storybook documentation
+- [ ] README with examples
+- [ ] Accessibility audit passed
+- [ ] Performance benchmarks met
+- [ ] Security audit passed
+- [ ] Peer review completed
+- [ ] NPM package published
+- [ ] Demo application created
+
+---
+
+**Note:** This package should be production-ready, following industry best practices and modern React development standards. It should seamlessly integrate with the existing NNews .NET backend API and work harmoniously with @ntools/nauth for authentication and authorization.

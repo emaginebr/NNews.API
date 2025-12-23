@@ -1,5 +1,6 @@
 using AutoMapper;
 using NNews.Domain.Entities;
+using NNews.Domain.Entities.Interfaces;
 using NNews.Dtos;
 
 namespace NNews.Infra.Mapping.Profiles
@@ -9,6 +10,8 @@ namespace NNews.Infra.Mapping.Profiles
         public CategoryDtoProfile()
         {
             CreateMap<CategoryModel, CategoryInfo>();
+            
+            CreateMap<ICategoryModel, CategoryInfo>();
 
             CreateMap<CategoryInfo, CategoryModel>()
                 .ConstructUsing(src => src.CategoryId > 0

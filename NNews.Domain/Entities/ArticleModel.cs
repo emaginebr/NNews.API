@@ -16,6 +16,7 @@ namespace NNews.Domain.Entities
         public string Title { get; private set; }
         public string Content { get; private set; }
         public ArticleStatus Status { get; private set; }
+        public ICategoryModel? Category { get; private set; }
 
         public IReadOnlyCollection<ITagModel> Tags => _tags.AsReadOnly();
         public IReadOnlyCollection<IRoleModel> Roles => _roles.AsReadOnly();
@@ -61,6 +62,11 @@ namespace NNews.Domain.Entities
             };
 
             return article;
+        }
+
+        public void SetCategory(ICategoryModel? category)
+        {
+            Category = category;
         }
 
         public void UpdateTitle(string title)

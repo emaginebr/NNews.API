@@ -2,8 +2,8 @@
 {
     public interface IArticleRepository<TModel>
     {
-        IEnumerable<TModel> ListAll(long? categoryId);
-        IEnumerable<TModel> FilterByRolesAndParent(IList<string>? roles, long? parentId);
+        (IEnumerable<TModel> Items, int TotalCount) ListAll(long? categoryId, int page, int pageSize);
+        (IEnumerable<TModel> Items, int TotalCount) FilterByRolesAndParent(IList<string>? roles, long? parentId, int page, int pageSize);
         TModel GetById(int id);
         int CountByCategoryId(int categoryId);
         TModel Insert(TModel category);

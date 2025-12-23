@@ -1,5 +1,6 @@
 using AutoMapper;
 using NNews.Domain.Entities;
+using NNews.Domain.Entities.Interfaces;
 using NNews.Domain.Enums;
 using NNews.Dtos;
 
@@ -11,7 +12,13 @@ namespace NNews.Infra.Mapping.Profiles
         {
             CreateMap<ArticleModel, ArticleInfo>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => (int)src.Status))
-                .ForMember(dest => dest.Category, opt => opt.Ignore())
+                .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category))
+                .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags))
+                .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.Roles));
+
+            CreateMap<IArticleModel, ArticleInfo>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => (int)src.Status))
+                .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category))
                 .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags))
                 .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.Roles));
 

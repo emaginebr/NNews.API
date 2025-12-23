@@ -21,15 +21,17 @@ namespace NNews.API.Controllers
         /// Lists all articles
         /// </summary>
         /// <param name="categoryId">Optional category ID to filter articles</param>
-        /// <returns>List of articles</returns>
+        /// <param name="page">Page number (default: 1)</param>
+        /// <param name="pageSize">Page size (default: 10, max: 100)</param>
+        /// <returns>Paginated list of articles</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(IList<ArticleInfo>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PagedResult<ArticleInfo>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult GetAll([FromQuery] long? categoryId)
+        public IActionResult GetAll([FromQuery] long? categoryId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var articles = _articleService.ListAll(categoryId);
+                var articles = _articleService.ListAll(categoryId, page, pageSize);
                 return Ok(articles);
             }
             catch (Exception ex)
@@ -44,11 +46,13 @@ namespace NNews.API.Controllers
         /// </summary>
         /// <param name="roles">List of role slugs (comma-separated, optional)</param>
         /// <param name="parentId">Parent category ID (optional)</param>
-        /// <returns>List of filtered published articles</returns>
+        /// <param name="page">Page number (default: 1)</param>
+        /// <param name="pageSize">Page size (default: 10, max: 100)</param>
+        /// <returns>Paginated list of filtered published articles</returns>
         [HttpGet("filter")]
-        [ProducesResponseType(typeof(IList<ArticleInfo>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PagedResult<ArticleInfo>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult Filter([FromQuery] string? roles, [FromQuery] long? parentId)
+        public IActionResult Filter([FromQuery] string? roles, [FromQuery] long? parentId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
@@ -60,7 +64,7 @@ namespace NNews.API.Controllers
                         .ToList();
                 }
 
-                var articles = _articleService.FilterByRolesAndParent(rolesList, parentId);
+                var articles = _articleService.FilterByRolesAndParent(rolesList, parentId, page, pageSize);
                 return Ok(articles);
             }
             catch (Exception ex)

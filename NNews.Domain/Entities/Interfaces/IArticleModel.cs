@@ -12,6 +12,7 @@ namespace NNews.Domain.Entities.Interfaces
         string Title { get; }
         string Content { get; }
         ArticleStatus Status { get; }
+        ICategoryModel? Category { get; }
         IReadOnlyCollection<ITagModel> Tags { get; }
         IReadOnlyCollection<IRoleModel> Roles { get; }
 
