@@ -113,6 +113,14 @@ StyleCopReport.xml
 *.svclog
 *.scc
 
+# SSL Certificates (Development)
+certs/
+*.crt
+*.key
+*.pfx
+*.p12
+*.pem
+
 # Chutzpah Test files
 _Chutzpah*
 

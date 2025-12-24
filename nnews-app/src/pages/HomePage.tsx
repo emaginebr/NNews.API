@@ -52,12 +52,12 @@ export function HomePage() {
             </Link>
           ) : (
             <>
-              <Link
-                to={ROUTES.REGISTER}
-                className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              <button
+                disabled
+                className="px-8 py-3 bg-gray-400 text-gray-200 rounded-lg cursor-not-allowed opacity-60 font-medium"
               >
                 Get Started
-              </Link>
+              </button>
               <Link
                 to={ROUTES.LOGIN}
                 className="px-8 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
@@ -103,12 +103,12 @@ export function HomePage() {
           </div>
         </div>
         {!isAuthenticated && (
-          <Link
-            to={ROUTES.REGISTER}
-            className="inline-block px-8 py-3 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+          <button
+            disabled
+            className="inline-block px-8 py-3 bg-gray-400 text-gray-200 rounded-lg cursor-not-allowed opacity-60 font-medium"
           >
             Create Your Account
-          </Link>
+          </button>
         )}
       </div>
     </div>

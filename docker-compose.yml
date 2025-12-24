@@ -24,8 +24,61 @@ services:
       timeout: 5s
       retries: 5
 
+  nnews-api:
+    build:
+      context: .
+      dockerfile: NNews.API.Dockerfile
+    container_name: nnews-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Docker}
+      - ASPNETCORE_URLS=http://+:8080;https://+:8443
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=${CERTIFICATE_PATH}
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${CERTIFICATE_PASSWORD}
+      - ASPNETCORE_HTTPS_PORT=8443
+      - ConnectionStrings__NNewsContext=${CONNECTION_STRING}
+      - JWT_SECRET=${JWT_SECRET}
+    ports:
+      - "${API_HTTP_PORT:-5007}:8080"
+      - "${API_HTTPS_PORT:-5008}:8443"
+    volumes:
+      - nnews_logs:/app/logs
+      - ./certs:/app/certs:ro
+    networks:
+      - emagine-network
+
+  nnews-app:
+    build:
+      context: .
+      dockerfile: nnews-app.Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:5004}
+        - VITE_NNEWS_API_URL=${VITE_NNEWS_API_URL:-https://localhost:5008}
+        - NODE_ENV=${NODE_ENV:-development}
+    container_name: nnews-app
+    restart: unless-stopped
+    depends_on:
+      - nnews-api
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+    ports:
+      - "${NNEWS_APP_PORT:-5009}:80"
+    networks:
+      - emagine-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
 volumes:
   postgres_data:
+    driver: local
+  nnews_logs:
     driver: local
 
 networks:

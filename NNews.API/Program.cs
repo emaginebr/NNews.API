@@ -32,17 +32,23 @@ try
     // Adiciona Serilog ao ASP.NET Core
     builder.Host.UseSerilog();
 
-    builder.Configuration.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
+    // Carrega appsettings baseado no ambiente
+    var environment = builder.Environment.EnvironmentName;
+    Log.Information("Running in {Environment} environment", environment);
+    
+    builder.Configuration
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
+        .AddEnvironmentVariables();
 
     // Configuração de CORS
     builder.Services.AddCors(options =>
     {
         options.AddPolicy("AllowFrontend", policy =>
         {
-            policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+            policy.AllowAnyOrigin()
                   .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials();
+                  .AllowAnyMethod();
         });
     });
 
@@ -55,6 +61,26 @@ try
 
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
+
+    // Configure Kestrel for HTTPS if certificate is available
+    var certPath = builder.Configuration["ASPNETCORE_Kestrel__Certificates__Default__Path"];
+    var certPassword = builder.Configuration["ASPNETCORE_Kestrel__Certificates__Default__Password"];
+    
+    if (!string.IsNullOrEmpty(certPath) && System.IO.File.Exists(certPath))
+    {
+        Log.Information("Configuring HTTPS with certificate: {CertPath}", certPath);
+        builder.WebHost.ConfigureKestrel(serverOptions =>
+        {
+            serverOptions.ConfigureHttpsDefaults(httpsOptions =>
+            {
+                httpsOptions.ServerCertificate = new System.Security.Cryptography.X509Certificates.X509Certificate2(certPath, certPassword);
+            });
+        });
+    }
+    else
+    {
+        Log.Warning("HTTPS certificate not configured or file not found at: {CertPath}", certPath ?? "NOT SET");
+    }
 
     Initializer.Configure(builder.Services, builder.Configuration.GetConnectionString("NNewsContext"), builder.Configuration);
 

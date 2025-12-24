@@ -1,0 +1,41 @@
+# Directories
+**/bin/
+**/obj/
+**/out/
+**/logs/
+**/TestResults/
+**/.vs/
+**/.vscode/
+**/.idea/
+
+# Node modules and build artifacts
+**/node_modules/
+**/dist/
+**/.next/
+**/build/
+
+# Files
+**/*.user
+**/*.suo
+**/*.cache
+**/.DS_Store
+**/Thumbs.db
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+**/.dockerignore
+**/docker-compose*
+**/Dockerfile*
+**/*.Dockerfile
+
+# Documentation
+**/*.md
+!README.md
+
+# Environment
+**/.env
+**/.env.*

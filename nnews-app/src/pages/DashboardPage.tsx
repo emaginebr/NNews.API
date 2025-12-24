@@ -1,7 +1,7 @@
 import { useAuth } from 'nauth-react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../lib/constants';
-import { User, KeyRound, Calendar, Mail, Shield, Activity } from 'lucide-react';
+import { User, Calendar, Mail, Shield, Activity } from 'lucide-react';
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -13,14 +13,7 @@ export function DashboardPage() {
       description: 'Manage your account information',
       to: ROUTES.PROFILE,
       color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
-    },
-    {
-      icon: <KeyRound className="w-6 h-6" />,
-      title: 'Change Password',
-      description: 'Update your password',
-      to: ROUTES.CHANGE_PASSWORD,
-      color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
-    },
+    }
   ];
 
   const userStats = [

@@ -1,9 +1,9 @@
 import { LoginForm } from 'nauth-react';
-import { useNavigate, Navigate, Link } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from 'nauth-react';
 import { toast } from 'sonner';
 import { ROUTES } from '../lib/constants';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/Card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -58,25 +58,6 @@ export function LoginPage() {
               className="space-y-4"
             />
           </CardContent>
-
-          <CardFooter className="flex-col space-y-3">
-            <Link
-              to={ROUTES.FORGOT_PASSWORD}
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium"
-            >
-              Forgot your password?
-            </Link>
-
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Don't have an account?{' '}
-              <Link
-                to={ROUTES.REGISTER}
-                className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-              >
-                Sign up
-              </Link>
-            </div>
-          </CardFooter>
         </Card>
       </div>
     </div>

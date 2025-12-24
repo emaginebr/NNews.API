@@ -1,6 +1,4 @@
 import { useAuth } from 'nauth-react';
-import { Link } from 'react-router-dom';
-import { ROUTES } from '../lib/constants';
 import { User, Mail, Calendar, Shield, KeyRound, Trash2, AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 
