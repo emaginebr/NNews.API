@@ -6,6 +6,7 @@ using NAuth.ACL.Interfaces;
 using NNews.Domain.Entities.Interfaces;
 using NNews.Domain.Services;
 using NNews.Domain.Services.Interfaces;
+using NNews.Dtos.Settings;
 using NNews.Infra.Context;
 using NNews.Infra.Interfaces.Repository;
 using NNews.Infra.Mapping.Profiles;
@@ -53,6 +54,7 @@ namespace NNews.Application
             services.AddHttpClient();
 
             services.Configure<NToolSetting>(configuration.GetSection("NTools"));
+            services.Configure<NNewsSetting>(configuration.GetSection("NNews"));
 
             injectDependency(typeof(IStringClient), typeof(StringClient), services, scoped);
             injectDependency(typeof(IFileClient), typeof(FileClient), services, scoped);
