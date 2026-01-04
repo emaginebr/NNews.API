@@ -7,6 +7,7 @@ import { TagAPI } from '../services/tag-api';
 export interface NNewsConfig {
   apiUrl: string;
   apiClient?: AxiosInstance;
+  headers?: Record<string, string>;
 }
 
 export interface NNewsContextValue {
@@ -32,6 +33,7 @@ export function NNewsProvider({ config, children }: NNewsProviderProps) {
         baseURL: config.apiUrl,
         headers: {
           'Content-Type': 'application/json',
+          ...config.headers,
         },
       });
 

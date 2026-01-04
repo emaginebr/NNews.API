@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { NAuthProvider } from 'nauth-react';
+import { NAuthProvider, useNAuth } from 'nauth-react';
 import { NNewsProvider } from 'nnews-react';
 import { Toaster } from 'sonner';
+import { useMemo } from 'react';
 //import 'nauth-react/styles';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -15,24 +16,20 @@ import { ArticleListPage } from './pages/ArticleListPage';
 import { ArticleEditPage } from './pages/ArticleEditPage';
 import { ROUTES } from './lib/constants';
 
-function App() {
+function AppContent() {
+  const { token } = useNAuth();
+
+  const nNewsConfig = useMemo(() => ({
+    apiUrl: import.meta.env.VITE_NNEWS_API_URL,
+    ...(token && {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }),
+  }), [token]);
+
   return (
-    <BrowserRouter>
-      <NAuthProvider
-        config={{
-          apiUrl: import.meta.env.VITE_API_URL,
-          enableFingerprinting: true,
-          redirectOnUnauthorized: ROUTES.LOGIN,
-          onAuthChange: (user) => {
-            console.log('Auth state changed:', user);
-          },
-        }}
-      >
-        <NNewsProvider
-          config={{
-            apiUrl: import.meta.env.VITE_NNEWS_API_URL,
-          }}
-        >
+    <NNewsProvider config={nNewsConfig}>
           <Toaster position="bottom-right" richColors />
           <Routes>
           <Route element={<Layout />}>
@@ -102,7 +99,24 @@ function App() {
             <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
           </Route>
         </Routes>
-        </NNewsProvider>
+      </NNewsProvider>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <NAuthProvider
+        config={{
+          apiUrl: import.meta.env.VITE_API_URL,
+          enableFingerprinting: true,
+          redirectOnUnauthorized: ROUTES.LOGIN,
+          onAuthChange: (user) => {
+            console.log('Auth state changed:', user);
+          },
+        }}
+      >
+        <AppContent />
       </NAuthProvider>
     </BrowserRouter>
   );

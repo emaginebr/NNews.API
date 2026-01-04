@@ -12,6 +12,8 @@ export const ROUTES = {
   ARTICLES_NEW: '/articles/new',
   ARTICLES_EDIT: (id: number) => `/articles/edit/${id}`,
   ARTICLES_VIEW: (id: number) => `/articles/${id}`,
+  ARTICLES_AI: '/articles/ai',
+  ARTICLES_AI_EDIT: (id: number) => `/articles/ai/${id}`,
 } as const;
 
 export const EXTERNAL_LINKS = {

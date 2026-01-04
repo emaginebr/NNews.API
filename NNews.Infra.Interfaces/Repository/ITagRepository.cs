@@ -3,6 +3,7 @@
     public interface ITagRepository<TModel>
     {
         IEnumerable<TModel> ListAll();
+        IEnumerable<TModel> ListByRoles(IList<string>? roles);
         TModel GetById(int id);
         TModel? GetBySlug(string slug);
         bool ExistSlug(string slug);

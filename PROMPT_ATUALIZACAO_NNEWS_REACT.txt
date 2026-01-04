@@ -1,0 +1,929 @@
+# PROMPT DE ATUALIZAÇÃO - PACOTE NPM NNEWS-REACT
+
+## CONTEXTO
+O backend NNews API foi atualizado com novas funcionalidades e alterações nos endpoints de artigos. É necessário atualizar o pacote npm `nnews-react` para refletir essas mudanças.
+
+---
+
+## ALTERAÇÕES NOS ENDPOINTS EXISTENTES
+
+### 1. POST /api/Article (Insert)
+
+**ALTERADO: Novo campo `tagList`**
+
+**Payload Anterior:**
+```typescript
+interface ArticleInput {
+  title: string;
+  content: string;
+  categoryId: number;
+  status: number;
+  dateAt: string;
+  imageName?: string;
+  roles?: string[];
+}
+```
+
+**Payload Atualizado:**
+```typescript
+interface ArticleInput {
+  title: string;
+  content: string;
+  categoryId: number;
+  tagList: string;        // NOVO: Tags separadas por vírgula (ex: "IA, Tecnologia, Inovação")
+  status: number;
+  dateAt: string;
+  imageName?: string;
+  roles?: string[];
+}
+```
+
+**Exemplo de Request:**
+```json
+POST /api/Article
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "title": "Tendências de IA em 2024",
+  "content": "<h2>Introdução</h2><p>Conteúdo do artigo...</p>",
+  "categoryId": 1,
+  "tagList": "IA, Tecnologia, Inovação, Machine Learning",
+  "status": 0,
+  "dateAt": "2024-01-15T10:00:00Z",
+  "imageName": "image-123.png",
+  "roles": ["admin", "editor"]
+}
+```
+
+**Exemplo de Response:**
+```json
+{
+  "articleId": 123,
+  "title": "Tendências de IA em 2024",
+  "content": "<h2>Introdução</h2><p>Conteúdo do artigo...</p>",
+  "categoryId": 1,
+  "category": {
+    "categoryId": 1,
+    "title": "Tecnologia"
+  },
+  "tags": [
+    { "tagId": 1, "title": "IA", "slug": "ia" },
+    { "tagId": 2, "title": "Tecnologia", "slug": "tecnologia" },
+    { "tagId": 3, "title": "Inovação", "slug": "inovacao" },
+    { "tagId": 4, "title": "Machine Learning", "slug": "machine-learning" }
+  ],
+  "status": 0,
+  "dateAt": "2024-01-15T10:00:00Z",
+  "imageName": "image-123.png",
+  "createdAt": "2024-01-15T10:00:00Z",
+  "updatedAt": "2024-01-15T10:00:00Z"
+}
+```
+
+---
+
+### 2. PUT /api/Article (Update)
+
+**ALTERADO: Novo campo `tagList`**
+
+**Payload Anterior:**
+```typescript
+interface ArticleUpdate {
+  articleId: number;
+  title: string;
+  content: string;
+  categoryId: number;
+  status: number;
+  dateAt: string;
+  imageName?: string;
+  roles?: string[];
+}
+```
+
+**Payload Atualizado:**
+```typescript
+interface ArticleUpdate {
+  articleId: number;
+  title: string;
+  content: string;
+  categoryId: number;
+  tagList: string;        // NOVO: Tags separadas por vírgula
+  status: number;
+  dateAt: string;
+  imageName?: string;
+  roles?: string[];
+}
+```
+
+**Exemplo de Request:**
+```json
+PUT /api/Article
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "articleId": 123,
+  "title": "Tendências de IA em 2024 - Atualizado",
+  "content": "<h2>Introdução</h2><p>Conteúdo atualizado...</p>",
+  "categoryId": 1,
+  "tagList": "IA, Tecnologia, Inovação, Deep Learning, ChatGPT",
+  "status": 1,
+  "dateAt": "2024-01-15T10:00:00Z",
+  "imageName": "image-456.png",
+  "roles": ["admin", "editor", "writer"]
+}
+```
+
+---
+
+## NOVOS ENDPOINTS - FUNCIONALIDADES COM IA
+
+### 3. POST /api/Article/insertWithAI (NOVO)
+
+**Descrição:** Cria um novo artigo usando IA (ChatGPT) para gerar o conteúdo e opcionalmente uma imagem (DALL-E 3).
+
+**Endpoint:** `POST /api/Article/insertWithAI`
+
+**Autenticação:** Requerida (Bearer token)
+
+**Request Body:**
+```typescript
+interface AIArticleRequest {
+  prompt: string;           // Descrição do artigo desejado (10-2000 caracteres)
+  generateImage: boolean;   // Se deve gerar imagem com DALL-E 3
+  categoryId?: number;      // Categoria preferencial (opcional)
+  roles?: string[];         // Roles para o artigo (opcional)
+  status?: number;          // Status inicial (padrão: 0 - Draft)
+}
+```
+
+**Exemplo de Request:**
+```json
+POST /api/Article/insertWithAI
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "prompt": "Escreva um artigo completo sobre as tendências de inteligência artificial em 2024, incluindo ChatGPT-4, Gemini e aplicações práticas em diferentes indústrias",
+  "generateImage": true,
+  "categoryId": 1,
+  "roles": ["admin", "editor"],
+  "status": 0
+}
+```
+
+**Exemplo de Response:**
+```json
+{
+  "articleId": 124,
+  "title": "Tendências de Inteligência Artificial em 2024: Inovações e Aplicações",
+  "content": "<h2>Introdução</h2><p>A inteligência artificial em 2024...</p><h2>ChatGPT-4 e Modelos de Linguagem</h2><p>...</p><h2>Aplicações Práticas</h2><p>...</p>",
+  "categoryId": 1,
+  "category": {
+    "categoryId": 1,
+    "title": "Tecnologia"
+  },
+  "tags": [
+    { "tagId": 1, "title": "IA", "slug": "ia" },
+    { "tagId": 2, "title": "ChatGPT", "slug": "chatgpt" },
+    { "tagId": 3, "title": "Gemini", "slug": "gemini" }
+  ],
+  "status": 0,
+  "dateAt": "2024-01-15T10:30:00Z",
+  "imageName": "ai-generated-abc123.png",
+  "imageUrl": "https://storage.example.com/nnews-images/ai-generated-abc123.png",
+  "createdAt": "2024-01-15T10:30:00Z",
+  "updatedAt": "2024-01-15T10:30:00Z"
+}
+```
+
+**Status Codes:**
+- `201 Created`: Artigo criado com sucesso
+- `400 Bad Request`: Prompt inválido ou dados incorretos
+- `401 Unauthorized`: Não autenticado
+- `500 Internal Server Error`: Erro na geração de conteúdo ou imagem
+
+---
+
+### 4. PUT /api/Article/updateWithAI (NOVO)
+
+**Descrição:** Atualiza um artigo existente usando IA para modificar o conteúdo baseado no prompt. A IA recebe o conteúdo atual do artigo como contexto.
+
+**Endpoint:** `PUT /api/Article/updateWithAI`
+
+**Autenticação:** Requerida (Bearer token)
+
+**Request Body:**
+```typescript
+interface AIArticleRequest {
+  articleId: number;        // ID do artigo a ser atualizado (obrigatório)
+  prompt: string;           // Instruções de atualização (10-2000 caracteres)
+  generateImage: boolean;   // Se deve gerar nova imagem
+  categoryId?: number;      // Nova categoria (opcional)
+  roles?: string[];         // Novas roles (opcional)
+  status?: number;          // Novo status (opcional)
+}
+```
+
+**Exemplo de Request 1 - Adicionar Conteúdo:**
+```json
+PUT /api/Article/updateWithAI
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "articleId": 123,
+  "prompt": "Adicione uma nova seção sobre as últimas atualizações do ChatGPT-4 lançadas em janeiro de 2024 e melhore a introdução tornando-a mais envolvente",
+  "generateImage": true
+}
+```
+
+**Exemplo de Request 2 - Restruturação:**
+```json
+{
+  "articleId": 456,
+  "prompt": "Reorganize o artigo com melhor fluxo: comece com introdução impactante, depois conceitos básicos, aplicações práticas com exemplos reais, e conclusão inspiradora. Adicione subtítulos em cada seção.",
+  "generateImage": false
+}
+```
+
+**Exemplo de Request 3 - Correção e Expansão:**
+```json
+{
+  "articleId": 789,
+  "prompt": "Corrija erros gramaticais, expanda a seção de 'Aplicações Práticas' com 3 casos de uso reais de empresas brasileiras, e atualize dados estatísticos para 2024",
+  "generateImage": true
+}
+```
+
+**Exemplo de Response:**
+```json
+{
+  "articleId": 123,
+  "title": "Tendências de IA em 2024: ChatGPT-4 e Inovações Recentes",
+  "content": "<h2>Introdução</h2><p>Em 2024, a inteligência artificial alcança novos patamares...</p><h2>ChatGPT-4: Últimas Atualizações</h2><p>Em janeiro de 2024, o ChatGPT-4 recebeu...</p><h2>Aplicações Práticas</h2><p>...</p>",
+  "categoryId": 1,
+  "category": {
+    "categoryId": 1,
+    "title": "Tecnologia"
+  },
+  "tags": [
+    { "tagId": 1, "title": "IA", "slug": "ia" },
+    { "tagId": 2, "title": "ChatGPT", "slug": "chatgpt" },
+    { "tagId": 5, "title": "GPT-4", "slug": "gpt-4" }
+  ],
+  "status": 0,
+  "dateAt": "2024-01-15T10:00:00Z",
+  "imageName": "ai-generated-xyz789.png",
+  "imageUrl": "https://storage.example.com/nnews-images/ai-generated-xyz789.png",
+  "createdAt": "2024-01-15T10:00:00Z",
+  "updatedAt": "2024-01-15T11:45:00Z"
+}
+```
+
+**Status Codes:**
+- `200 OK`: Artigo atualizado com sucesso
+- `400 Bad Request`: ArticleId ou prompt inválidos
+- `401 Unauthorized`: Não autenticado
+- `404 Not Found`: Artigo não encontrado
+- `500 Internal Server Error`: Erro na atualização via IA
+
+---
+
+## FUNCIONALIDADES DA IA
+
+### InsertWithAI
+
+**O que a IA faz:**
+1. Analisa o prompt do usuário
+2. Seleciona categoria apropriada (se não fornecida)
+3. Gera conteúdo em HTML estruturado
+4. Sugere tags relevantes
+5. Gera imagem ilustrativa (se solicitado) via DALL-E 3
+6. Faz upload da imagem gerada
+7. Cria o artigo no banco de dados
+
+**Conteúdo Gerado:**
+- HTML semântico com `<h2>`, `<h3>`, `<p>`, `<ul>`, `<li>`, etc.
+- SEM markdown (não usa `#`, `##`, etc.)
+- Estrutura profissional de artigo
+- Tags automaticamente associadas
+
+### UpdateWithAI
+
+**O que a IA faz:**
+1. Busca o artigo existente no banco
+2. Envia conteúdo atual como contexto para a IA
+3. Aplica as alterações solicitadas no prompt
+4. Mantém coerência com conteúdo existente
+5. Preserva status e data original (apenas conteúdo é alterado)
+6. Gera nova imagem (se solicitado) ou mantém a existente
+7. Atualiza o artigo no banco de dados
+
+**Contexto Fornecido à IA:**
+```json
+{
+  "articleId": 123,
+  "title": "Título atual",
+  "content": "<h2>Conteúdo HTML completo atual</h2>...",
+  "categoryId": 1,
+  "categoryName": "Tecnologia",
+  "tags": ["IA", "Tecnologia"],
+  "status": 1,
+  "dateAt": "2024-01-15T10:00:00Z",
+  "hasImage": true
+}
+```
+
+---
+
+## ALTERAÇÕES NECESSÁRIAS NO PACOTE NNEWS-REACT
+
+### 1. Atualizar Interfaces TypeScript
+
+```typescript
+// article-api.ts ou types/article.ts
+
+// ATUALIZAR: ArticleInput
+export interface ArticleInput {
+  title: string;
+  content: string;
+  categoryId: number;
+  tagList: string;        // ADICIONAR ESTE CAMPO
+  status: number;
+  dateAt: string;
+  imageName?: string;
+  roles?: string[];
+}
+
+// ATUALIZAR: ArticleUpdate
+export interface ArticleUpdate {
+  articleId: number;
+  title: string;
+  content: string;
+  categoryId: number;
+  tagList: string;        // ADICIONAR ESTE CAMPO
+  status: number;
+  dateAt: string;
+  imageName?: string;
+  roles?: string[];
+}
+
+// ADICIONAR: AIArticleRequest
+export interface AIArticleRequest {
+  articleId?: number;     // Obrigatório para Update, opcional para Insert
+  prompt: string;
+  generateImage?: boolean;
+  categoryId?: number;
+  roles?: string[];
+  status?: number;
+}
+
+// ATUALIZAR: Article (Response)
+export interface Article {
+  articleId: number;
+  title: string;
+  content: string;
+  categoryId: number;
+  category?: Category;
+  tags?: Tag[];          // Array de objetos Tag
+  status: number;
+  dateAt: string;
+  imageName?: string;
+  imageUrl?: string;
+  roles?: Role[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Tag {
+  tagId: number;
+  title: string;
+  slug: string;
+}
+```
+
+### 2. Adicionar Novos Métodos na API Client
+
+```typescript
+// article-api.ts
+
+export class ArticleAPI {
+  // ... métodos existentes ...
+
+  /**
+   * Cria um novo artigo usando IA
+   * @param request - Configuração de geração com prompt e opções
+   * @returns Artigo criado
+   */
+  async createArticleWithAI(request: AIArticleRequest): Promise<Article> {
+    const response = await this.client.post<Article>(
+      '/api/Article/insertWithAI',
+      request
+    );
+    return this.transformArticleDate(response.data);
+  }
+
+  /**
+   * Atualiza um artigo existente usando IA
+   * @param request - Configuração de atualização com articleId, prompt e opções
+   * @returns Artigo atualizado
+   */
+  async updateArticleWithAI(request: AIArticleRequest): Promise<Article> {
+    if (!request.articleId) {
+      throw new Error('articleId is required for updateWithAI');
+    }
+    
+    const response = await this.client.put<Article>(
+      '/api/Article/updateWithAI',
+      request
+    );
+    return this.transformArticleDate(response.data);
+  }
+}
+```
+
+### 3. Atualizar Componentes de Formulário
+
+**Componente de Criação/Edição de Artigo:**
+
+```typescript
+// ArticleForm.tsx ou similar
+
+interface ArticleFormData {
+  title: string;
+  content: string;
+  categoryId: number;
+  tags: string;          // NOVO: Campo de texto para tags separadas por vírgula
+  status: number;
+  imageName?: string;
+  roles?: string[];
+}
+
+const ArticleForm: React.FC<Props> = ({ articleId, onSave }) => {
+  const [formData, setFormData] = useState<ArticleFormData>({
+    title: '',
+    content: '',
+    categoryId: 0,
+    tags: '',           // NOVO CAMPO
+    status: 0,
+    imageName: '',
+    roles: []
+  });
+
+  // Quando carregar artigo existente
+  useEffect(() => {
+    if (articleId) {
+      const article = await articleAPI.getArticleById(articleId);
+      setFormData({
+        ...article,
+        tags: article.tags?.map(t => t.title).join(', ') || ''  // Converter array para string
+      });
+    }
+  }, [articleId]);
+
+  const handleSubmit = async () => {
+    const payload: ArticleInput | ArticleUpdate = {
+      ...(articleId && { articleId }),
+      title: formData.title,
+      content: formData.content,
+      categoryId: formData.categoryId,
+      tagList: formData.tags,  // Enviar como tagList
+      status: formData.status,
+      dateAt: new Date().toISOString(),
+      imageName: formData.imageName,
+      roles: formData.roles
+    };
+
+    if (articleId) {
+      await articleAPI.updateArticle(payload as ArticleUpdate);
+    } else {
+      await articleAPI.createArticle(payload as ArticleInput);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input 
+        type="text" 
+        placeholder="Title" 
+        value={formData.title}
+        onChange={(e) => setFormData({...formData, title: e.target.value})}
+      />
+      
+      <textarea 
+        placeholder="Content (HTML)" 
+        value={formData.content}
+        onChange={(e) => setFormData({...formData, content: e.target.value})}
+      />
+      
+      <select 
+        value={formData.categoryId}
+        onChange={(e) => setFormData({...formData, categoryId: Number(e.target.value)})}
+      >
+        <option value="">Select Category</option>
+        {/* options */}
+      </select>
+
+      {/* NOVO CAMPO */}
+      <input 
+        type="text" 
+        placeholder="Tags (separadas por vírgula: IA, Tecnologia, Inovação)" 
+        value={formData.tags}
+        onChange={(e) => setFormData({...formData, tags: e.target.value})}
+      />
+
+      <button type="submit">Save</button>
+    </form>
+  );
+};
+```
+
+### 4. Criar Componente para Geração com IA
+
+```typescript
+// AIArticleGenerator.tsx
+
+import React, { useState } from 'react';
+import { AIArticleRequest } from '../types/article';
+import { articleAPI } from '../services/article-api';
+
+interface Props {
+  mode: 'create' | 'update';
+  articleId?: number;  // Obrigatório se mode === 'update'
+  onSuccess: (article: Article) => void;
+}
+
+const AIArticleGenerator: React.FC<Props> = ({ mode, articleId, onSuccess }) => {
+  const [request, setRequest] = useState<AIArticleRequest>({
+    articleId: articleId,
+    prompt: '',
+    generateImage: false,
+    categoryId: undefined,
+    roles: []
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleGenerate = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      let result: Article;
+      
+      if (mode === 'create') {
+        result = await articleAPI.createArticleWithAI(request);
+      } else {
+        if (!request.articleId) {
+          throw new Error('articleId is required for update');
+        }
+        result = await articleAPI.updateArticleWithAI(request);
+      }
+      
+      onSuccess(result);
+    } catch (err) {
+      setError(err.message || 'Erro ao gerar artigo com IA');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="ai-article-generator">
+      <h3>{mode === 'create' ? 'Criar Artigo com IA' : 'Atualizar Artigo com IA'}</h3>
+      
+      <textarea
+        placeholder={
+          mode === 'create' 
+            ? 'Descreva o artigo que deseja criar (ex: Escreva sobre tendências de IA em 2024)' 
+            : 'Descreva as alterações desejadas (ex: Adicione seção sobre ChatGPT-4 e melhore introdução)'
+        }
+        value={request.prompt}
+        onChange={(e) => setRequest({...request, prompt: e.target.value})}
+        rows={5}
+        minLength={10}
+        maxLength={2000}
+      />
+
+      <label>
+        <input
+          type="checkbox"
+          checked={request.generateImage}
+          onChange={(e) => setRequest({...request, generateImage: e.target.checked})}
+        />
+        Gerar imagem com DALL-E 3
+      </label>
+
+      <button 
+        onClick={handleGenerate} 
+        disabled={loading || request.prompt.length < 10}
+      >
+        {loading ? 'Gerando...' : mode === 'create' ? 'Criar com IA' : 'Atualizar com IA'}
+      </button>
+
+      {error && <div className="error">{error}</div>}
+      
+      {loading && (
+        <div className="loading-message">
+          <p>A IA está trabalhando...</p>
+          <p>Isso pode levar alguns segundos.</p>
+          {request.generateImage && <p>Gerando imagem com DALL-E 3...</p>}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AIArticleGenerator;
+```
+
+### 5. Exemplo de Integração no Dashboard
+
+```typescript
+// ArticleManagement.tsx
+
+const ArticleManagement: React.FC = () => {
+  const [mode, setMode] = useState<'manual' | 'ai'>('manual');
+  const [editMode, setEditMode] = useState<'create' | 'update'>('create');
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+
+  return (
+    <div>
+      <h2>Gerenciar Artigos</h2>
+      
+      <div className="mode-selector">
+        <button onClick={() => setMode('manual')}>
+          Criar/Editar Manual
+        </button>
+        <button onClick={() => setMode('ai')}>
+          Usar IA
+        </button>
+      </div>
+
+      {mode === 'manual' ? (
+        <ArticleForm 
+          articleId={selectedArticle?.articleId}
+          onSave={(article) => {
+            console.log('Article saved:', article);
+            setSelectedArticle(null);
+          }}
+        />
+      ) : (
+        <AIArticleGenerator
+          mode={editMode}
+          articleId={selectedArticle?.articleId}
+          onSuccess={(article) => {
+            console.log('Article generated:', article);
+            setSelectedArticle(null);
+          }}
+        />
+      )}
+    </div>
+  );
+};
+```
+
+---
+
+## HELPERS E UTILITIES
+
+### Converter Tags Array para String
+```typescript
+export const tagsToString = (tags: Tag[]): string => {
+  return tags.map(t => t.title).join(', ');
+};
+```
+
+### Converter String para Tags Preview
+```typescript
+export const stringToTagsPreview = (tagList: string): string[] => {
+  return tagList
+    .split(',')
+    .map(t => t.trim())
+    .filter(t => t.length > 0);
+};
+```
+
+### Validar Prompt
+```typescript
+export const validatePrompt = (prompt: string): { valid: boolean; error?: string } => {
+  if (!prompt || prompt.trim().length < 10) {
+    return { valid: false, error: 'Prompt deve ter pelo menos 10 caracteres' };
+  }
+  if (prompt.length > 2000) {
+    return { valid: false, error: 'Prompt deve ter no máximo 2000 caracteres' };
+  }
+  return { valid: true };
+};
+```
+
+---
+
+## CHANGELOG PARA DOCUMENTAÇÃO
+
+### Version 2.0.0
+
+**BREAKING CHANGES:**
+- `ArticleInput` agora requer campo `tagList` (string)
+- `ArticleUpdate` agora requer campo `tagList` (string)
+
+**NEW FEATURES:**
+- ? Novo método `createArticleWithAI()` para criar artigos com IA
+- ? Novo método `updateArticleWithAI()` para atualizar artigos com IA
+- ? Novo tipo `AIArticleRequest` para requests de IA
+- ? Geração automática de conteúdo HTML via ChatGPT
+- ? Geração automática de imagens via DALL-E 3
+- ? Tags automáticas sugeridas pela IA
+
+**ENHANCEMENTS:**
+- ?? Campo `tags` no response agora retorna array completo de objetos `Tag`
+- ?? Tags podem ser criadas automaticamente ao salvar artigo
+- ?? UpdateWithAI recebe contexto completo do artigo atual
+
+**MIGRATION GUIDE:**
+1. Adicionar campo `tagList` em todos os forms de artigo
+2. Converter array de tags para string separada por vírgula ao editar
+3. Importar novos tipos `AIArticleRequest` e `Tag`
+4. Implementar componentes de geração com IA (opcional)
+
+---
+
+## EXEMPLOS DE USO NO FRONTEND
+
+### Exemplo 1: Criar Artigo Manualmente com Tags
+```typescript
+const newArticle: ArticleInput = {
+  title: 'Meu Novo Artigo',
+  content: '<h2>Introdução</h2><p>Conteúdo...</p>',
+  categoryId: 1,
+  tagList: 'JavaScript, React, TypeScript, Web Development',
+  status: 0,
+  dateAt: new Date().toISOString(),
+  imageName: 'hero-image.png',
+  roles: ['public']
+};
+
+const created = await articleAPI.createArticle(newArticle);
+console.log('Tags criadas:', created.tags);
+// Tags criadas: [
+//   { tagId: 1, title: 'JavaScript', slug: 'javascript' },
+//   { tagId: 2, title: 'React', slug: 'react' },
+//   ...
+// ]
+```
+
+### Exemplo 2: Criar Artigo com IA
+```typescript
+const aiRequest: AIArticleRequest = {
+  prompt: 'Escreva um tutorial completo sobre React Hooks, incluindo useState, useEffect e custom hooks com exemplos práticos',
+  generateImage: true,
+  categoryId: 2,  // Categoria "Tutoriais"
+  roles: ['public']
+};
+
+const aiArticle = await articleAPI.createArticleWithAI(aiRequest);
+console.log('Artigo gerado:', aiArticle.title);
+console.log('Conteúdo HTML:', aiArticle.content);
+console.log('Tags sugeridas:', aiArticle.tags);
+console.log('Imagem gerada:', aiArticle.imageUrl);
+```
+
+### Exemplo 3: Atualizar Artigo com IA
+```typescript
+const updateRequest: AIArticleRequest = {
+  articleId: 123,
+  prompt: 'Adicione uma seção sobre React 18 Server Components e atualize os exemplos de código para a sintaxe mais recente',
+  generateImage: false  // Manter imagem existente
+};
+
+const updated = await articleAPI.updateArticleWithAI(updateRequest);
+console.log('Artigo atualizado:', updated.title);
+```
+
+### Exemplo 4: Editar Tags de Artigo Existente
+```typescript
+// Buscar artigo
+const article = await articleAPI.getArticleById(123);
+
+// Converter tags para string para edição
+const currentTags = article.tags?.map(t => t.title).join(', ') || '';
+console.log('Tags atuais:', currentTags);
+// Tags atuais: "React, JavaScript, Hooks"
+
+// Atualizar com novas tags
+const updateData: ArticleUpdate = {
+  ...article,
+  tagList: 'React, JavaScript, Hooks, React 18, Server Components',
+  dateAt: article.dateAt || new Date().toISOString()
+};
+
+const updated = await articleAPI.updateArticle(updateData);
+console.log('Novas tags:', updated.tags);
+```
+
+---
+
+## TESTES RECOMENDADOS
+
+### Teste 1: Campo TagList no Insert
+```typescript
+test('should create article with tags', async () => {
+  const article: ArticleInput = {
+    title: 'Test Article',
+    content: '<p>Content</p>',
+    categoryId: 1,
+    tagList: 'Tag1, Tag2, Tag3',
+    status: 0,
+    dateAt: new Date().toISOString()
+  };
+
+  const result = await articleAPI.createArticle(article);
+  
+  expect(result.tags).toHaveLength(3);
+  expect(result.tags[0].title).toBe('Tag1');
+});
+```
+
+### Teste 2: CreateWithAI
+```typescript
+test('should create article with AI', async () => {
+  const request: AIArticleRequest = {
+    prompt: 'Write about AI trends',
+    generateImage: false
+  };
+
+  const result = await articleAPI.createArticleWithAI(request);
+  
+  expect(result.articleId).toBeGreaterThan(0);
+  expect(result.content).toContain('<h2>');
+  expect(result.tags).toBeDefined();
+});
+```
+
+### Teste 3: UpdateWithAI
+```typescript
+test('should update article with AI', async () => {
+  const request: AIArticleRequest = {
+    articleId: 1,
+    prompt: 'Add section about latest updates',
+    generateImage: false
+  };
+
+  const result = await articleAPI.updateArticleWithAI(request);
+  
+  expect(result.articleId).toBe(1);
+  expect(result.updatedAt).toBeDefined();
+});
+```
+
+---
+
+## NOTAS IMPORTANTES
+
+1. **TagList é uma string:** As tags devem ser separadas por vírgula. O backend cria automaticamente tags que não existem.
+
+2. **Geração de Imagem:** Quando `generateImage: true`, a geração pode levar 5-10 segundos. Adicione loading state apropriado.
+
+3. **Prompt Mínimo:** O prompt deve ter pelo menos 10 caracteres e no máximo 2000.
+
+4. **Context do Update:** No UpdateWithAI, a IA recebe o conteúdo completo atual do artigo, permitindo alterações contextualizadas.
+
+5. **Autenticação:** Todos os endpoints de criação/atualização (incluindo IA) requerem autenticação Bearer token.
+
+6. **Validação:** Valide os campos obrigatórios no frontend antes de enviar:
+   - Insert/Update: title, content, categoryId, tagList
+   - InsertWithAI/UpdateWithAI: prompt, articleId (apenas Update)
+
+7. **Error Handling:** Implemente tratamento para:
+   - 400: Dados inválidos
+   - 401: Não autenticado
+   - 404: Artigo não encontrado (Update)
+   - 500: Erro no servidor ou na IA
+
+---
+
+## ENDPOINTS RESUMO
+
+| Método | Endpoint | Descrição | Novo/Alterado |
+|--------|----------|-----------|---------------|
+| POST | `/api/Article` | Criar artigo | ?? Alterado (+ tagList) |
+| PUT | `/api/Article` | Atualizar artigo | ?? Alterado (+ tagList) |
+| POST | `/api/Article/insertWithAI` | Criar com IA | ? Novo |
+| PUT | `/api/Article/updateWithAI` | Atualizar com IA | ? Novo |
+
+---
+
+## CONTATO E SUPORTE
+
+Para dúvidas ou problemas na integração, consulte:
+- Documentação da API: `/swagger`
+- Logs do backend: Todos os métodos têm logging detalhado
+- Repository: https://github.com/landim32/NNews
+
+---
+
+**Data de Atualização:** 2024-01-15
+**Versão da API:** 2.0.0
+**Compatibilidade:** .NET 8, React 18+

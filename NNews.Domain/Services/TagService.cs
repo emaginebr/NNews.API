@@ -45,6 +45,12 @@ namespace NNews.Domain.Services
             return _mapper.Map<IList<TagInfo>>(tags);
         }
 
+        public IList<TagInfo> ListByRoles(IList<string>? roles)
+        {
+            var tags = _tagRepository.ListByRoles(roles);
+            return _mapper.Map<IList<TagInfo>>(tags);
+        }
+
         public TagInfo GetById(int tagId)
         {
             var tag = _tagRepository.GetById(tagId);

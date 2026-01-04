@@ -6,7 +6,7 @@ export interface ArticleListProps {
   error?: Error | null;
   onArticleClick?: (article: Article) => void;
   onEditClick?: (article: Article) => void;
-  onDeleteClick?: (article: Article) => void;
+  onAIClick?: (article: Article) => void;
   showActions?: boolean;
   emptyMessage?: string;
 }
@@ -17,7 +17,7 @@ export function ArticleList({
   error = null,
   onArticleClick,
   onEditClick,
-  onDeleteClick,
+  onAIClick,
   showActions = false,
   emptyMessage = 'No articles found',
 }: ArticleListProps) {
@@ -57,11 +57,16 @@ export function ArticleList({
           >
             {/* Featured Image */}
             {article.imageName && (
-              <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 overflow-hidden">
+              <div
+                className={`w-full h-48 bg-gray-200 dark:bg-gray-700 overflow-hidden ${
+                  onArticleClick ? 'cursor-pointer' : ''
+                }`}
+                onClick={() => onArticleClick?.(article)}
+              >
                 <img
                   src={article.imageName}
                   alt={article.title}
-                  className="w-full h-[250px] object-cover"
+                  className="w-full h-[250px] object-cover hover:scale-105 transition-transform duration-300"
                   style={{ height: '250px' }}
                 />
               </div>
@@ -160,8 +165,29 @@ export function ArticleList({
                 )}
               </div>
 
-              {showActions && (onEditClick || onDeleteClick) && (
+              {showActions && (onEditClick || onAIClick) && (
                 <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex gap-2 justify-end">
+                  {onAIClick && (
+                    <button
+                      onClick={() => onAIClick(article)}
+                      className="rounded p-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                      title="AI Edit"
+                    >
+                      <svg
+                        className="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 10V3L4 14h7v7l9-11h-7z"
+                        />
+                      </svg>
+                    </button>
+                  )}
                   {onEditClick && (
                     <button
                       onClick={() => onEditClick(article)}
@@ -179,27 +205,6 @@ export function ArticleList({
                           strokeLinejoin="round"
                           strokeWidth={2}
                           d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                        />
-                      </svg>
-                    </button>
-                  )}
-                  {onDeleteClick && (
-                    <button
-                      onClick={() => onDeleteClick(article)}
-                      className="rounded p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      title="Delete"
-                    >
-                      <svg
-                        className="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                         />
                       </svg>
                     </button>

@@ -80,7 +80,7 @@ namespace NNews.Infra.Repository
             return _mapper.Map<IEnumerable<CategoryModel>>(categories);
         }
 
-        public IEnumerable<ICategoryModel> ListByRolesAndParent(IList<string>? roles, long? parentId)
+        public IEnumerable<ICategoryModel> ListByParent(IList<string>? roles, long? parentId)
         {
             var query = _context.Categories
                 .AsNoTracking()
@@ -101,7 +101,8 @@ namespace NNews.Infra.Repository
             {
                 query = query.Where(c => c.Articles.Any(a =>
                     a.Status == (int)ArticleStatus.Published &&
-                    a.ArticleRoles.Any(ar => roles.Contains(ar.Slug))));
+                    (a.ArticleRoles.Any(ar => roles.Contains(ar.Slug)) || !a.ArticleRoles.Any())
+                ));
             }
 
             var categories = query

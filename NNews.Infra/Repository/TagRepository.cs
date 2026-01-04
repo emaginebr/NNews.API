@@ -29,6 +29,46 @@ namespace NNews.Infra.Repository
             return _mapper.Map<IEnumerable<TagModel>>(tags);
         }
 
+        public IEnumerable<ITagModel> ListByRoles(IList<string>? roles)
+        {
+            var query = _context.Tags
+                .Include(t => t.Articles)
+                    .ThenInclude(a => a.ArticleRoles)
+                .AsNoTracking()
+                .Where(t => t.Articles.Any(a => a.Status == 1));
+
+            if (roles != null && roles.Any())
+            {
+                query = query.Where(t => t.Articles.Any(a => 
+                    a.Status == 1 && 
+                    (a.ArticleRoles.Any(ar => roles.Contains(ar.Slug)) || !a.ArticleRoles.Any())
+                ));
+            }
+            else
+            {
+                query = query.Where(t => t.Articles.Any(a => 
+                    a.Status == 1 && !a.ArticleRoles.Any()
+                ));
+            }
+
+            var tags = query
+                .Select(t => new 
+                {
+                    Tag = t,
+                    ArticleCount = t.Articles.Count(a => 
+                        a.Status == 1 && 
+                        (roles == null || !roles.Any() ? 
+                            !a.ArticleRoles.Any() : 
+                            (a.ArticleRoles.Any(ar => roles.Contains(ar.Slug)) || !a.ArticleRoles.Any())
+                        )
+                    )
+                })
+                .OrderBy(x => x.Tag.Title)
+                .ToList();
+
+            return tags.Select(x => TagModel.Reconstruct(x.Tag.TagId, x.Tag.Title, x.Tag.Slug, x.ArticleCount));
+        }
+
         public ITagModel GetById(int id)
         {
             var tag = _context.Tags

@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { RichTextEditor } from './RichTextEditor';
 import { ArticleStatus } from '../types/news';
-import type { Article, ArticleInput, ArticleUpdate, Category, Tag } from '../types/news';
+import type { Article, ArticleInput, ArticleUpdate, Category } from '../types/news';
 import { useNNews } from '../contexts/NNewsContext';
 
 export interface ArticleEditorProps {
     article?: Article | null;
     categories?: Category[];
-    tags?: Tag[];
     onSave: (article: ArticleInput | ArticleUpdate) => Promise<void>;
     onCancel: () => void;
     loading?: boolean;
@@ -16,7 +15,6 @@ export interface ArticleEditorProps {
 export function ArticleEditor({
     article,
     categories = [],
-    tags = [],
     onSave,
     onCancel,
     loading = false,
@@ -30,7 +28,7 @@ export function ArticleEditor({
     const [status, setStatus] = useState<ArticleStatus>(ArticleStatus.Draft);
     const [categoryId, setCategoryId] = useState<number | null>(null);
     const [dateAt, setDateAt] = useState<string>('');
-    const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
+    const [tagList, setTagList] = useState<string>('');
     const [roleIds, setRoleIds] = useState<string>('');
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -46,7 +44,7 @@ export function ArticleEditor({
             setStatus(article.status);
             setCategoryId(article.categoryId || null);
             setDateAt(article.dateAt ? new Date(article.dateAt).toISOString().slice(0, 16) : '');
-            setSelectedTagIds(article.tags?.map((t) => t.tagId).filter((id): id is number => id !== undefined) || []);
+            setTagList(article.tags?.map((t) => t.title).join(', ') || '');
             setRoleIds(article.roles?.map((r) => r.slug).join(', ') || '');
         }
     }, [article]);
@@ -85,7 +83,7 @@ export function ArticleEditor({
             status,
             categoryId: categoryId || undefined,
             dateAt: dateAt || undefined,
-            tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
+            tagList: tagList.trim() || undefined,
             roleIds: roles.length > 0 ? roles : undefined,
         };
 
@@ -138,14 +136,6 @@ export function ArticleEditor({
     const handleRemoveImage = () => {
         setImagePreview('');
         setImageName('');
-    };
-
-    const handleTagToggle = (tagId: number) => {
-        setSelectedTagIds((prev) =>
-            prev.includes(tagId)
-                ? prev.filter((id) => id !== tagId)
-                : [...prev, tagId]
-        );
     };
 
     return (
@@ -294,26 +284,22 @@ export function ArticleEditor({
             </div>
 
             {/* Tags */}
-            {tags.length > 0 && (
-                <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tags</label>
-                    <div className="flex flex-wrap gap-2">
-                        {tags.map((tag) => (
-                            <button
-                                key={tag.tagId}
-                                type="button"
-                                onClick={() => handleTagToggle(tag.tagId || 0)}
-                                className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${selectedTagIds.includes(tag.tagId || 0)
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                                    }`}
-                            >
-                                #{tag.title}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
+            <div className="space-y-2">
+                <label htmlFor="tags" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Tags
+                </label>
+                <input
+                    id="tags"
+                    type="text"
+                    value={tagList}
+                    onChange={(e) => setTagList(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="Enter tags separated by commas (e.g., AI, Technology, Innovation)"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Comma-separated list of tags. Tags will be created automatically if they don't exist.
+                </p>
+            </div>
 
             {/* Roles */}
             <div className="space-y-2">

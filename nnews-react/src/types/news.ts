@@ -42,6 +42,7 @@ export interface Article {
   title: string;
   content: string;
   imageName?: string;
+  imageUrl?: string;
   status: ArticleStatus;
   dateAt?: string | Date;
   createdAt?: string | Date;
@@ -81,12 +82,18 @@ export interface ArticleInput {
   status: ArticleStatus;
   categoryId?: number;
   dateAt?: string | Date;
-  tagIds?: number[];
+  tagList?: string;
   roleIds?: string[];
 }
 
 export interface ArticleUpdate extends ArticleInput {
   articleId: number;
+}
+
+export interface AIArticleRequest {
+  articleId?: number;
+  prompt: string;
+  generateImage?: boolean;
 }
 
 // ============================================================================

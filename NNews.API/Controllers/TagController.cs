@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using NAuth.ACL.Interfaces;
 using NNews.Domain.Services.Interfaces;
 using NNews.DTO;
 
@@ -9,11 +11,13 @@ namespace NNews.API.Controllers
     public class TagController : ControllerBase
     {
         private readonly ITagService _tagService;
+        private readonly IUserClient _userClient;
         private readonly ILogger<TagController> _logger;
 
-        public TagController(ITagService tagService, ILogger<TagController> logger)
+        public TagController(ITagService tagService, IUserClient userClient, ILogger<TagController> logger)
         {
             _tagService = tagService ?? throw new ArgumentNullException(nameof(tagService));
+            _userClient = userClient ?? throw new ArgumentNullException(nameof(userClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -22,12 +26,18 @@ namespace NNews.API.Controllers
         /// </summary>
         /// <returns>Lista de tags</returns>
         [HttpGet]
+        [Authorize]
         [ProducesResponseType(typeof(IList<TagInfo>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult GetAll()
         {
             try
             {
+                var userSession = _userClient.GetUserInSession(HttpContext);
+                if (userSession == null)
+                {
+                    return Unauthorized("Not Authorized");
+                }
                 var tags = _tagService.ListAll();
                 return Ok(tags);
             }
@@ -35,6 +45,30 @@ namespace NNews.API.Controllers
             {
                 _logger.LogError(ex, "Error listing tags");
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Error listing tags" });
+            }
+        }
+
+        /// <summary>
+        /// Lista tags de artigos publicados filtradas por roles
+        /// </summary>
+        /// <param name="roles">Lista de role slugs (comma-separated, optional)</param>
+        /// <returns>Lista de tags filtradas</returns>
+        [HttpGet("ListByRoles")]
+        [ProducesResponseType(typeof(IList<TagInfo>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult ListByRoles()
+        {
+            try
+            {
+                var userSession = _userClient.GetUserInSession(HttpContext);
+
+                var tags = _tagService.ListByRoles(userSession?.Roles);
+                return Ok(tags);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error listing tags by roles");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Error listing tags by roles" });
             }
         }
 
@@ -72,6 +106,7 @@ namespace NNews.API.Controllers
         /// <param name="tag">Dados da tag</param>
         /// <returns>Tag criada</returns>
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(typeof(TagInfo), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -79,6 +114,12 @@ namespace NNews.API.Controllers
         {
             try
             {
+                var userSession = _userClient.GetUserInSession(HttpContext);
+                if (userSession == null)
+                {
+                    return Unauthorized("Not Authorized");
+                }
+
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
@@ -103,6 +144,7 @@ namespace NNews.API.Controllers
         /// <param name="tag">Dados atualizados da tag</param>
         /// <returns>Tag atualizada</returns>
         [HttpPut]
+        [Authorize]
         [ProducesResponseType(typeof(TagInfo), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -111,6 +153,12 @@ namespace NNews.API.Controllers
         {
             try
             {
+                var userSession = _userClient.GetUserInSession(HttpContext);
+                if (userSession == null)
+                {
+                    return Unauthorized("Not Authorized");
+                }
+
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
@@ -140,6 +188,7 @@ namespace NNews.API.Controllers
         /// <param name="id">ID da tag</param>
         /// <returns>Status da operação</returns>
         [HttpDelete("{id}")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -147,6 +196,12 @@ namespace NNews.API.Controllers
         {
             try
             {
+                var userSession = _userClient.GetUserInSession(HttpContext);
+                if (userSession == null)
+                {
+                    return Unauthorized("Not Authorized");
+                }
+
                 _tagService.Delete(id);
                 return NoContent();
             }
@@ -169,6 +224,7 @@ namespace NNews.API.Controllers
         /// <param name="targetTagId">ID da tag de destino (receberá os artigos)</param>
         /// <returns>Status da operação</returns>
         [HttpPost("merge/{sourceTagId:long}/{targetTagId:long}")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -177,6 +233,12 @@ namespace NNews.API.Controllers
         {
             try
             {
+                var userSession = _userClient.GetUserInSession(HttpContext);
+                if (userSession == null)
+                {
+                    return Unauthorized("Not Authorized");
+                }
+
                 _tagService.MergeTags(sourceTagId, targetTagId);
                 return NoContent();
             }

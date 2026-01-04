@@ -1,21 +1,31 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from 'nauth-react';
 import { ROUTES, APP_NAME, APP_DESCRIPTION } from '../lib/constants';
-import { Shield, Lock, Users, Palette, CheckCircle } from 'lucide-react';
+import { Shield, Users, Palette, CheckCircle, Sparkles, Newspaper, Tag } from 'lucide-react';
 
 export function HomePage() {
   const { isAuthenticated } = useAuth();
 
   const features = [
     {
-      icon: <Lock className="w-6 h-6" />,
-      title: 'Complete Authentication',
-      description: 'Login, register, password recovery, and password reset functionality',
+      icon: <Sparkles className="w-6 h-6" />,
+      title: 'AI-Powered Content',
+      description: 'Create and update articles using ChatGPT and DALL-E 3 for automatic content and image generation',
+    },
+    {
+      icon: <Newspaper className="w-6 h-6" />,
+      title: 'Article Management',
+      description: 'Complete CRUD operations for articles with rich text editing and categorization',
+    },
+    {
+      icon: <Tag className="w-6 h-6" />,
+      title: 'Tags & Categories',
+      description: 'Organize content with automatic tag creation and hierarchical categories',
     },
     {
       icon: <Users className="w-6 h-6" />,
-      title: 'User Management',
-      description: 'Profile management, password changes, and account deletion',
+      title: 'User Authentication',
+      description: 'Secure authentication with profile management and role-based access',
     },
     {
       icon: <Palette className="w-6 h-6" />,
@@ -87,19 +97,19 @@ export function HomePage() {
 
       {/* Demo Features */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-12 text-white text-center">
-        <h2 className="text-3xl font-bold mb-6">Ready to Experience NAuth?</h2>
+        <h2 className="text-3xl font-bold mb-6">Powered by AI & Modern Tech</h2>
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <div className="flex items-center gap-2 justify-center">
             <CheckCircle className="w-5 h-5" />
-            <span>TypeScript Support</span>
+            <span>ChatGPT Integration</span>
           </div>
           <div className="flex items-center gap-2 justify-center">
             <CheckCircle className="w-5 h-5" />
-            <span>Responsive Design</span>
+            <span>DALL-E 3 Images</span>
           </div>
           <div className="flex items-center gap-2 justify-center">
             <CheckCircle className="w-5 h-5" />
-            <span>Accessible</span>
+            <span>TypeScript & React</span>
           </div>
         </div>
         {!isAuthenticated && (

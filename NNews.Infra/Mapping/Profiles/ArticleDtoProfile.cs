@@ -79,6 +79,46 @@ namespace NNews.Infra.Mapping.Profiles
                     return article;
                 })
                 .ForAllMembers(opt => opt.Ignore());
+
+            CreateMap<ArticleInsertedInfo, ArticleModel>()
+                .ConstructUsing((src, ctx) =>
+                {
+                    var article = ArticleModel.Create(
+                        src.Title,
+                        src.Content,
+                        src.CategoryId,
+                        src.AuthorId,
+                        (ArticleStatus)src.Status
+                    );
+                    
+                    if (!string.IsNullOrEmpty(src.ImageName))
+                    {
+                        article.UpdateImageName(src.ImageName);
+                    }
+
+                    return article;
+                })
+                .ForAllMembers(opt => opt.Ignore());
+
+            CreateMap<ArticleUpdatedInfo, ArticleModel>()
+                .ConstructUsing((src, ctx) =>
+                {
+                    var article = ArticleModel.Reconstruct(
+                        src.ArticleId,
+                        src.Title,
+                        src.Content,
+                        src.CategoryId,
+                        src.AuthorId,
+                        (ArticleStatus)src.Status,
+                        src.DateAt,
+                        DateTime.UtcNow,
+                        DateTime.UtcNow,
+                        src.ImageName
+                    );
+
+                    return article;
+                })
+                .ForAllMembers(opt => opt.Ignore());
         }
     }
 }

@@ -1,0 +1,125 @@
+name: Publish NuGet Packages
+
+on:
+  workflow_run:
+    workflows: ["Version and Tag"]
+    types:
+      - completed
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  CONFIGURATION: Release
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    outputs:
+      should_publish: ${{ steps.check.outputs.should_publish }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check for changes in NuGet projects
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+            echo "Manual trigger - will publish"
+          else
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.workflow_run.head_sha }}^ ${{ github.event.workflow_run.head_sha }})
+            if echo "$CHANGED_FILES" | grep -qE '^(NNews\.DTO|NNews\.ACL)/'; then
+              echo "should_publish=true" >> $GITHUB_OUTPUT
+              echo "Changes detected in NNews.DTO or NNews.ACL"
+            else
+              echo "should_publish=false" >> $GITHUB_OUTPUT
+              echo "No changes in NNews.DTO or NNews.ACL - skipping publish"
+            fi
+          fi
+
+  publish-nuget:
+    runs-on: ubuntu-latest
+    needs: check-changes
+    if: needs.check-changes.outputs.should_publish == 'true'
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v0.10.2
+      with:
+        versionSpec: '5.x'
+    
+    - name: Determine Version
+      id: gitversion
+      uses: gittools/actions/gitversion/execute@v0.10.2
+      with:
+        useConfigFile: true
+        configFilePath: GitVersion.yml
+    
+    - name: Display Version
+      run: |
+        echo "Building and publishing version: ${{ steps.gitversion.outputs.nuGetVersionV2 }}"
+    
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    - name: Build NNews.DTO
+      run: dotnet build NNews.DTO/NNews.DTO.csproj --configuration ${{ env.CONFIGURATION }} --no-restore /p:Version=${{ steps.gitversion.outputs.nuGetVersionV2 }}
+    
+    - name: Build NNews.ACL
+      run: dotnet build NNews.ACL/NNews.ACL.csproj --configuration ${{ env.CONFIGURATION }} --no-restore /p:Version=${{ steps.gitversion.outputs.nuGetVersionV2 }}
+    
+    - name: Pack NNews.DTO
+      run: dotnet pack NNews.DTO/NNews.DTO.csproj --configuration ${{ env.CONFIGURATION }} --no-build --output ./artifacts /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }}
+    
+    - name: Pack NNews.ACL
+      run: dotnet pack NNews.ACL/NNews.ACL.csproj --configuration ${{ env.CONFIGURATION }} --no-build --output ./artifacts /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }}
+    
+    - name: Publish NNews.DTO to NuGet
+      run: dotnet nuget push ./artifacts/NNews.DTO.${{ steps.gitversion.outputs.nuGetVersionV2 }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      continue-on-error: false
+    
+    - name: Publish NNews.ACL to NuGet
+      run: dotnet nuget push ./artifacts/NNews.ACL.${{ steps.gitversion.outputs.nuGetVersionV2 }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      continue-on-error: false
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-packages
+        path: ./artifacts/*.nupkg
+        retention-days: 30
+    
+    - name: Summary
+      run: |
+        echo "## ?? NuGet Packages Published" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### NNews.DTO" >> $GITHUB_STEP_SUMMARY
+        echo "- Version: \`${{ steps.gitversion.outputs.nuGetVersionV2 }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "- Package: [NNews.DTO on NuGet](https://www.nuget.org/packages/NNews.DTO/${{ steps.gitversion.outputs.nuGetVersionV2 }})" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### NNews.ACL" >> $GITHUB_STEP_SUMMARY
+        echo "- Version: \`${{ steps.gitversion.outputs.nuGetVersionV2 }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "- Package: [NNews.ACL on NuGet](https://www.nuget.org/packages/NNews.ACL/${{ steps.gitversion.outputs.nuGetVersionV2 }})" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Version Information" >> $GITHUB_STEP_SUMMARY
+        echo "- SemVer: \`${{ steps.gitversion.outputs.semVer }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "- Full SemVer: \`${{ steps.gitversion.outputs.fullSemVer }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "- Commit: \`${{ steps.gitversion.outputs.sha }}\`" >> $GITHUB_STEP_SUMMARY

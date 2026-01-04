@@ -1,11 +1,13 @@
 import type { AxiosInstance } from 'axios';
-import type { Article, ArticleInput, ArticleUpdate, PagedResult } from '../types/news';
+import type { Article, ArticleInput, ArticleUpdate, PagedResult, AIArticleRequest } from '../types/news';
 
 const NEWS_API_ENDPOINTS = {
   ARTICLES: '/api/article',
   ARTICLES_FILTER: '/api/article/filter',
   ARTICLE_BY_ID: (id: number) => `/api/article/${id}`,
   IMAGE_UPLOAD: '/api/Image/uploadImage',
+  INSERT_WITH_AI: '/api/article/insertWithAI',
+  UPDATE_WITH_AI: '/api/article/updateWithAI',
 };
 
 export class ArticleAPI {
@@ -130,6 +132,40 @@ export class ArticleAPI {
     console.log('[ArticleAPI] deleteArticle - Request:', { id, url: NEWS_API_ENDPOINTS.ARTICLE_BY_ID(id) });
     await this.client.delete(NEWS_API_ENDPOINTS.ARTICLE_BY_ID(id));
     console.log('[ArticleAPI] deleteArticle - Success');
+  }
+
+  /**
+   * Create a new article using AI
+   * @param request - AI article request with prompt and options
+   * @returns Created article
+   */
+  async createArticleWithAI(request: AIArticleRequest): Promise<Article> {
+    console.log('[ArticleAPI] createArticleWithAI - Request:', { url: NEWS_API_ENDPOINTS.INSERT_WITH_AI, data: request });
+    const response = await this.client.post<Article>(
+      NEWS_API_ENDPOINTS.INSERT_WITH_AI,
+      request
+    );
+    console.log('[ArticleAPI] createArticleWithAI - Response:', response.data);
+    return this.transformArticleDate(response.data);
+  }
+
+  /**
+   * Update an existing article using AI
+   * @param request - AI article request with articleId, prompt and options
+   * @returns Updated article
+   */
+  async updateArticleWithAI(request: AIArticleRequest): Promise<Article> {
+    if (!request.articleId) {
+      throw new Error('articleId is required for updateWithAI');
+    }
+    
+    console.log('[ArticleAPI] updateArticleWithAI - Request:', { url: NEWS_API_ENDPOINTS.UPDATE_WITH_AI, data: request });
+    const response = await this.client.put<Article>(
+      NEWS_API_ENDPOINTS.UPDATE_WITH_AI,
+      request
+    );
+    console.log('[ArticleAPI] updateArticleWithAI - Response:', response.data);
+    return this.transformArticleDate(response.data);
   }
 
   /**

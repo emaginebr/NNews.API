@@ -238,3 +238,68 @@ export function throttle<T extends (...args: any[]) => any>(
     }
   };
 }
+
+// ============================================================================
+// Article AI Utilities
+// ============================================================================
+
+import type { Tag } from '../types/news';
+
+/**
+ * Convert tags array to comma-separated string
+ */
+export function tagsToString(tags: Tag[]): string {
+  return tags.map(t => t.title).join(', ');
+}
+
+/**
+ * Convert comma-separated string to tags preview array
+ */
+export function stringToTagsPreview(tagList: string): string[] {
+  return tagList
+    .split(',')
+    .map(t => t.trim())
+    .filter(t => t.length > 0);
+}
+
+/**
+ * Validate AI prompt
+ */
+export function validatePrompt(prompt: string): { valid: boolean; error?: string } {
+  if (!prompt || prompt.trim().length < 10) {
+    return { valid: false, error: 'Prompt must be at least 10 characters long' };
+  }
+  if (prompt.length > 2000) {
+    return { valid: false, error: 'Prompt must be less than 2000 characters' };
+  }
+  return { valid: true };
+}
+
+/**
+ * Validate tag list string
+ */
+export function validateTagList(tagList: string): { valid: boolean; error?: string; tags?: string[] } {
+  if (!tagList || !tagList.trim()) {
+    return { valid: true, tags: [] };
+  }
+
+  const tags = stringToTagsPreview(tagList);
+  
+  if (tags.length === 0) {
+    return { valid: false, error: 'Invalid tag format. Use comma-separated values.' };
+  }
+
+  // Check for empty tags
+  const hasEmptyTags = tagList.split(',').some(t => t.trim().length === 0 && t.length > 0);
+  if (hasEmptyTags) {
+    return { valid: false, error: 'Tags cannot be empty. Remove extra commas.' };
+  }
+
+  // Check individual tag length
+  const longTags = tags.filter(t => t.length > 50);
+  if (longTags.length > 0) {
+    return { valid: false, error: 'Individual tags must be less than 50 characters' };
+  }
+
+  return { valid: true, tags };
+}

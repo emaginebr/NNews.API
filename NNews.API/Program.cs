@@ -5,22 +5,19 @@ using System.Text.Json.Serialization;
 
 // Configuração do Serilog ANTES de criar o builder
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
+    .MinimumLevel.Verbose()  // Nível mais baixo do Serilog (equivalente a Trace)
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
     .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
     .MinimumLevel.Override("System", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Infrastructure", LogEventLevel.Information)
     .Enrich.FromLogContext()
     .Enrich.WithProperty("Application", "NNews.API")
     .Enrich.WithMachineName()
     .Enrich.WithThreadId()
     .WriteTo.Console(
-        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}")
-    .WriteTo.File(
-        path: "logs/nnews-.log",
-        rollingInterval: RollingInterval.Day,
-        retainedFileCountLimit: 30,
-        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{SourceContext}] [{ThreadId}] {Message:lj}{NewLine}{Exception}",
-        shared: true)
+        restrictedToMinimumLevel: LogEventLevel.Verbose,
+        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{SourceContext}] [{ThreadId}] {Message:lj}{NewLine}{Exception}")
     .CreateLogger();
 
 try
@@ -90,12 +87,15 @@ try
     app.UseSerilogRequestLogging(options =>
     {
         options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+        options.GetLevel = (httpContext, elapsed, ex) => LogEventLevel.Debug;  // Log todas requisições como Debug
         options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
         {
             diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
             diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
             diagnosticContext.Set("RemoteIpAddress", httpContext.Connection.RemoteIpAddress);
             diagnosticContext.Set("UserAgent", httpContext.Request.Headers["User-Agent"].ToString());
+            diagnosticContext.Set("RequestBody", httpContext.Request.ContentLength);
+            diagnosticContext.Set("ResponseBody", httpContext.Response.ContentLength);
         };
     });
 

@@ -40,7 +40,7 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__Password=${CERTIFICATE_PASSWORD}
       - ASPNETCORE_HTTPS_PORT=8443
       - ConnectionStrings__NNewsContext=${CONNECTION_STRING}
-      - JWT_SECRET=${JWT_SECRET}
+      - NAuth__JwtSecret=${JWT_SECRET}
     ports:
       - "${API_HTTP_PORT:-5007}:8080"
       - "${API_HTTPS_PORT:-5008}:8443"

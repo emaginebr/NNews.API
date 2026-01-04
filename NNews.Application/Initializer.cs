@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NAuth.ACL;
 using NAuth.ACL.Interfaces;
+using NAuth.DTO.Settings;
 using NNews.Domain.Entities.Interfaces;
 using NNews.Domain.Services;
 using NNews.Domain.Services.Interfaces;
@@ -53,11 +55,13 @@ namespace NNews.Application
             services.AddLogging();
             services.AddHttpClient();
 
+            services.Configure<NAuthSetting>(configuration.GetSection("NAuth"));
             services.Configure<NToolSetting>(configuration.GetSection("NTools"));
             services.Configure<NNewsSetting>(configuration.GetSection("NNews"));
 
             injectDependency(typeof(IStringClient), typeof(StringClient), services, scoped);
             injectDependency(typeof(IFileClient), typeof(FileClient), services, scoped);
+            injectDependency(typeof(IChatGPTClient), typeof(ChatGPTClient), services, scoped);
             injectDependency(typeof(IUserClient), typeof(UserClient), services, scoped);
 
             #region Infra
@@ -84,7 +88,11 @@ namespace NNews.Application
             injectDependency(typeof(ICategoryService), typeof(CategoryService), services, scoped);
             injectDependency(typeof(ITagService), typeof(TagService), services, scoped);
             injectDependency(typeof(IArticleService), typeof(ArticleService), services, scoped);
+            injectDependency(typeof(IArticleAIService), typeof(ArticleAIService), services, scoped);
             #endregion
+
+            services.AddAuthentication("BasicAuthentication")
+                .AddScheme<AuthenticationSchemeOptions, NAuthHandler>("BasicAuthentication", null);
         }
     }
 }

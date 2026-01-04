@@ -26,6 +26,7 @@ namespace NNews.API.Controllers
 
         [RequestSizeLimit(100_000_000)]
         [HttpPost("uploadImage")]
+        [Authorize]
         public async Task<ActionResult<string>> uploadImage(IFormFile file)
         {
             try
@@ -33,6 +34,12 @@ namespace NNews.API.Controllers
                 if (file == null || file.Length == 0)
                 {
                     return BadRequest("No file uploaded");
+                }
+
+                var userSession = _userClient.GetUserInSession(HttpContext);
+                if (userSession == null)
+                {
+                    return Unauthorized("Not Authorized");
                 }
 
                 var fileName = await _imageService.UploadFileAsync("NNews", file);

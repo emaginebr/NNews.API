@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useArticles, useCategories, useTags, ArticleEditor, type ArticleInput, type ArticleUpdate } from 'nnews-react';
-import { ArrowLeft } from 'lucide-react';
+import { useArticles, useCategories, ArticleEditor, AIArticleGenerator, type ArticleInput, type ArticleUpdate, type Article } from 'nnews-react';
+import { ArrowLeft, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import 'react-quill-new/dist/quill.snow.css';
 
@@ -9,6 +9,7 @@ export function ArticleEditPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEditing = id !== 'new' && id !== undefined;
+  const [showAIModal, setShowAIModal] = useState(false);
 
   const {
     articles,
@@ -19,14 +20,12 @@ export function ArticleEditPage() {
   } = useArticles();
 
   const { categories, fetchCategories } = useCategories();
-  const { tags, fetchTags } = useTags();
 
   const [currentArticle, setCurrentArticle] = useState<any>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchCategories();
-    fetchTags();
 
     if (isEditing) {
       fetchArticles({ page: 1, pageSize: 100 });
@@ -43,6 +42,18 @@ export function ArticleEditPage() {
       }
     }
   }, [isEditing, id, articles]);
+
+  const handleAISuccess = (article: Article) => {
+    toast.success(`Article ${isEditing ? 'updated' : 'created'} successfully with AI!`);
+    setShowAIModal(false);
+    // Refresh the current article data
+    if (isEditing) {
+      fetchArticles({ page: 1, pageSize: 100 });
+    } else {
+      // Navigate to edit the new article
+      navigate(`/articles/edit/${article.articleId}`);
+    }
+  };
 
   const handleSave = async (articleData: ArticleInput | ArticleUpdate) => {
     setSaving(true);
@@ -98,7 +109,7 @@ export function ArticleEditPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <button
           onClick={handleBack}
           className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
@@ -106,6 +117,16 @@ export function ArticleEditPage() {
           <ArrowLeft className="h-5 w-5" />
           Back to Articles
         </button>
+        
+        {isEditing && (
+          <button
+            onClick={() => setShowAIModal(true)}
+            className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 text-white hover:from-blue-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg"
+          >
+            <Sparkles className="h-5 w-5" />
+            Edit with AI
+          </button>
+        )}
       </div>
 
       <div className="mb-6">
@@ -123,12 +144,19 @@ export function ArticleEditPage() {
         <ArticleEditor
           article={currentArticle}
           categories={categories || []}
-          tags={tags || []}
           onSave={handleSave}
           onCancel={handleCancel}
           loading={saving}
         />
       </div>
+
+      <AIArticleGenerator
+        mode={isEditing ? 'update' : 'create'}
+        articleId={currentArticle?.articleId}
+        isOpen={showAIModal}
+        onSuccess={handleAISuccess}
+        onClose={() => setShowAIModal(false)}
+      />
     </div>
   );
 }

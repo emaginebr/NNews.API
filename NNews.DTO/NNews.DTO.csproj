@@ -4,6 +4,28 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    
+    <!-- NuGet Package Metadata -->
+    <PackageId>NNews.DTO</PackageId>
+    <Version>2.0.0</Version>
+    <Authors>NNews Team</Authors>
+    <Company>NNews</Company>
+    <Product>NNews Content Management System</Product>
+    <Description>Data Transfer Objects (DTOs) for NNews CMS. Includes models for articles, categories, tags, and AI-powered content generation with ChatGPT and DALL-E 3.</Description>
+    <PackageTags>nnews;cms;dto;articles;ai;chatgpt;dalle;content-management</PackageTags>
+    <PackageProjectUrl>https://github.com/landim32/NNews</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/landim32/NNews</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
+    <Copyright>Copyright (c) 2026 NNews Team</Copyright>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
 </Project>

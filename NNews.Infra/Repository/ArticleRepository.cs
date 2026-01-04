@@ -35,7 +35,7 @@ namespace NNews.Infra.Repository
             var totalCount = query.Count();
 
             var articles = query
-                .OrderByDescending(a => a.CreatedAt)
+                .OrderByDescending(a => a.DateAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
@@ -43,7 +43,35 @@ namespace NNews.Infra.Repository
             return (_mapper.Map<IEnumerable<ArticleModel>>(articles), totalCount);
         }
 
-        public (IEnumerable<IArticleModel> Items, int TotalCount) FilterByRolesAndParent(IList<string>? roles, long? parentId, int page, int pageSize)
+        public (IEnumerable<IArticleModel> Items, int TotalCount) ListByCategory(IList<string>? roles, long categoryId, int page, int pageSize)
+        {
+            IQueryable<Article> query = _context.Articles
+                .AsNoTracking()
+                .Include(a => a.ArticleRoles)
+                .Include(a => a.Tags)
+                .Include(a => a.Category)
+                .Where(a => a.Status == (int)ArticleStatus.Published && a.CategoryId == categoryId);
+
+            if (roles != null && roles.Any())
+            {
+                query = query.Where(a => 
+                    a.ArticleRoles.Any(ar => roles.Contains(ar.Slug)) || 
+                    !a.ArticleRoles.Any()
+                );
+            }
+
+            var totalCount = query.Count();
+
+            var articles = query
+                .OrderByDescending(a => a.DateAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return (_mapper.Map<IEnumerable<ArticleModel>>(articles), totalCount);
+        }
+
+        public (IEnumerable<IArticleModel> Items, int TotalCount) ListByRoles(IList<string>? roles, int page, int pageSize)
         {
             IQueryable<Article> query = _context.Articles
                 .AsNoTracking()
@@ -52,18 +80,76 @@ namespace NNews.Infra.Repository
                 .Include(a => a.Category)
                 .Where(a => a.Status == (int)ArticleStatus.Published);
 
-            if (parentId.HasValue)
+            if (roles != null && roles.Any())
             {
-                query = query.Where(a => a.Category.ParentId == parentId.Value);
+                query = query.Where(a => 
+                    a.ArticleRoles.Any(ar => roles.Contains(ar.Slug)) || 
+                    !a.ArticleRoles.Any()
+                );
             }
-            else
+
+            var totalCount = query.Count();
+
+            var articles = query
+                .OrderByDescending(a => a.DateAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return (_mapper.Map<IEnumerable<ArticleModel>>(articles), totalCount);
+        }
+
+        public (IEnumerable<IArticleModel> Items, int TotalCount) ListByTag(IList<string>? roles, string tagSlug, int page, int pageSize)
+        {
+            IQueryable<Article> query = _context.Articles
+                .AsNoTracking()
+                .Include(a => a.ArticleRoles)
+                .Include(a => a.Tags)
+                .Include(a => a.Category)
+                .Where(a => a.Status == (int)ArticleStatus.Published && a.Tags.Any(t => t.Slug == tagSlug));
+
+            if (roles != null && roles.Any())
             {
-                query = query.Where(a => a.Category.ParentId == null);
+                query = query.Where(a => 
+                    a.ArticleRoles.Any(ar => roles.Contains(ar.Slug)) || 
+                    !a.ArticleRoles.Any()
+                );
+            }
+
+            var totalCount = query.Count();
+
+            var articles = query
+                .OrderByDescending(a => a.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return (_mapper.Map<IEnumerable<ArticleModel>>(articles), totalCount);
+        }
+
+        public (IEnumerable<IArticleModel> Items, int TotalCount) Search(IList<string>? roles, string keyword, int page, int pageSize)
+        {
+            IQueryable<Article> query = _context.Articles
+                .AsNoTracking()
+                .Include(a => a.ArticleRoles)
+                .Include(a => a.Tags)
+                .Include(a => a.Category)
+                .Where(a => a.Status == (int)ArticleStatus.Published);
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var keywordLower = keyword.ToLower();
+                query = query.Where(a => 
+                    a.Title.ToLower().Contains(keywordLower) || 
+                    a.Content.ToLower().Contains(keywordLower));
             }
 
             if (roles != null && roles.Any())
             {
-                query = query.Where(a => a.ArticleRoles.Any(ar => roles.Contains(ar.Slug)));
+                query = query.Where(a => 
+                    a.ArticleRoles.Any(ar => roles.Contains(ar.Slug)) || 
+                    !a.ArticleRoles.Any()
+                );
             }
 
             var totalCount = query.Count();

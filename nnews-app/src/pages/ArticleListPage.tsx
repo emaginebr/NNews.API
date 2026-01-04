@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useArticles, ArticleList, type Article } from 'nnews-react';
-import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useArticles, ArticleList, AIArticleGenerator, type Article } from 'nnews-react';
+import { Plus, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function ArticleListPage() {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [aiMode, setAIMode] = useState<'create' | 'update'>('create');
+  const [selectedArticleId, setSelectedArticleId] = useState<number | undefined>();
   const ITEMS_PER_PAGE = 10;
 
   const {
@@ -14,7 +17,6 @@ export function ArticleListPage() {
     loading,
     error,
     fetchArticles,
-    deleteArticle,
   } = useArticles();
 
   // Fetch articles when page changes
@@ -26,17 +28,10 @@ export function ArticleListPage() {
     navigate(`/articles/edit/${article.articleId}`);
   };
 
-  const handleDeleteClick = async (article: Article) => {
-    if (window.confirm(`Are you sure you want to delete "${article.title}"?`)) {
-      try {
-        await deleteArticle(article.articleId);
-        toast.success('Article deleted successfully');
-        fetchArticles({ page: currentPage, pageSize: ITEMS_PER_PAGE });
-      } catch (error) {
-        toast.error('Failed to delete article');
-        console.error('Delete error:', error);
-      }
-    }
+  const handleAIClick = (article: Article) => {
+    setAIMode('update');
+    setSelectedArticleId(article.articleId);
+    setShowAIModal(true);
   };
 
   const handleArticleClick = (article: Article) => {
@@ -45,6 +40,20 @@ export function ArticleListPage() {
 
   const handleNewArticle = () => {
     navigate('/articles/new');
+  };
+
+  const handleNewArticleWithAI = () => {
+    setAIMode('create');
+    setSelectedArticleId(undefined);
+    setShowAIModal(true);
+  };
+
+  const handleAISuccess = (article: Article) => {
+    toast.success(`Article ${aiMode === 'create' ? 'created' : 'updated'} successfully with AI!`);
+    setShowAIModal(false);
+    fetchArticles({ page: currentPage, pageSize: ITEMS_PER_PAGE });
+    // Navigate to edit the new article
+    navigate(`/articles/edit/${article.articleId}`);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -63,13 +72,22 @@ export function ArticleListPage() {
             Manage your articles
           </p>
         </div>
-        <button
-          onClick={handleNewArticle}
-          className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="h-5 w-5" />
-          New Article
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleNewArticleWithAI}
+            className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 text-white hover:from-blue-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg"
+          >
+            <Sparkles className="h-5 w-5" />
+            Create with AI
+          </button>
+          <button
+            onClick={handleNewArticle}
+            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="h-5 w-5" />
+            New Article
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -87,7 +105,7 @@ export function ArticleListPage() {
           error={error}
           onArticleClick={handleArticleClick}
           onEditClick={handleEditClick}
-          onDeleteClick={handleDeleteClick}
+          onAIClick={handleAIClick}
           showActions={true}
           emptyMessage="No articles found. Create your first article!"
         />
@@ -120,6 +138,14 @@ export function ArticleListPage() {
           </div>
         )}
       </div>
+
+      <AIArticleGenerator
+        mode={aiMode}
+        articleId={selectedArticleId}
+        isOpen={showAIModal}
+        onSuccess={handleAISuccess}
+        onClose={() => setShowAIModal(false)}
+      />
     </div>
   );
 }

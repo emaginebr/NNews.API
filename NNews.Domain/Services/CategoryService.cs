@@ -26,9 +26,9 @@ namespace NNews.Domain.Services
             return _mapper.Map<IList<CategoryInfo>>(categories);
         }
 
-        public IList<CategoryInfo> ListByRolesAndParent(IList<string>? roles, long? parentId)
+        public IList<CategoryInfo> ListByParent(IList<string>? roles, long? parentId)
         {
-            var categories = _categoryRepository.ListByRolesAndParent(roles, parentId);
+            var categories = _categoryRepository.ListByParent(roles, parentId);
             return _mapper.Map<IList<CategoryInfo>>(categories);
         }
 

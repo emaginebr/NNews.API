@@ -9,7 +9,6 @@ COPY ["NNews.Domain/NNews.Domain.csproj", "NNews.Domain/"]
 COPY ["NNews.DTO/NNews.DTO.csproj", "NNews.DTO/"]
 COPY ["NNews.Infra/NNews.Infra.csproj", "NNews.Infra/"]
 COPY ["NNews.Infra.Interfaces/NNews.Infra.Interfaces.csproj", "NNews.Infra.Interfaces/"]
-COPY ["Lib/", "Lib/"]
 
 # Restore dependencies
 RUN dotnet restore "NNews.API/NNews.API.csproj"

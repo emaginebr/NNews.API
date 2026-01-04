@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using NAuth.ACL.Interfaces;
 using NNews.Domain.Services.Interfaces;
 using NNews.DTO;
 
@@ -9,11 +11,13 @@ namespace NNews.API.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
+        private readonly IUserClient _userClient;
         private readonly ILogger<CategoryController> _logger;
 
-        public CategoryController(ICategoryService categoryService, ILogger<CategoryController> logger)
+        public CategoryController(ICategoryService categoryService, IUserClient userClient, ILogger<CategoryController> logger)
         {
             _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
+            _userClient = userClient ?? throw new ArgumentNullException(nameof(userClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -22,12 +26,19 @@ namespace NNews.API.Controllers
         /// </summary>
         /// <returns>List of categories</returns>
         [HttpGet]
+        [Authorize]
         [ProducesResponseType(typeof(IList<CategoryInfo>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult GetAll()
         {
             try
             {
+                var userSession = _userClient.GetUserInSession(HttpContext);
+                if (userSession == null)
+                {
+                    return Unauthorized("Not Authorized");
+                }
+
                 var categories = _categoryService.ListAll();
                 return Ok(categories);
             }
@@ -44,22 +55,16 @@ namespace NNews.API.Controllers
         /// <param name="roles">List of role slugs (comma-separated)</param>
         /// <param name="parentId">Parent category ID (optional)</param>
         /// <returns>List of filtered categories with published articles</returns>
-        [HttpGet("filter")]
+        [HttpGet("listByParent")]
         [ProducesResponseType(typeof(IList<CategoryInfo>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult GetByRolesAndParent([FromQuery] string? roles, [FromQuery] long? parentId)
         {
             try
             {
-                IList<string>? rolesList = null;
-                if (!string.IsNullOrWhiteSpace(roles))
-                {
-                    rolesList = roles.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                        .Select(r => r.Trim())
-                        .ToList();
-                }
+                var userSession = _userClient.GetUserInSession(HttpContext);
 
-                var categories = _categoryService.ListByRolesAndParent(rolesList, parentId);
+                var categories = _categoryService.ListByParent(userSession?.Roles, parentId);
                 return Ok(categories);
             }
             catch (Exception ex)
@@ -103,13 +108,20 @@ namespace NNews.API.Controllers
         /// <param name="category">Category data</param>
         /// <returns>Created category</returns>
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(typeof(CategoryInfo), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult Create([FromBody] CategoryInfo category)
+        public IActionResult Insert([FromBody] CategoryInfo category)
         {
             try
             {
+                var userSession = _userClient.GetUserInSession(HttpContext);
+                if (userSession == null)
+                {
+                    return Unauthorized("Not Authorized");
+                }
+
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
@@ -135,6 +147,7 @@ namespace NNews.API.Controllers
         /// <param name="category">Updated category data</param>
         /// <returns>Updated category</returns>
         [HttpPut()]
+        [Authorize]
         [ProducesResponseType(typeof(CategoryInfo), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -143,6 +156,12 @@ namespace NNews.API.Controllers
         {
             try
             {
+                var userSession = _userClient.GetUserInSession(HttpContext);
+                if (userSession == null)
+                {
+                    return Unauthorized("Not Authorized");
+                }
+
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
@@ -175,6 +194,7 @@ namespace NNews.API.Controllers
         /// <param name="id">Category ID</param>
         /// <returns>Operation status</returns>
         [HttpDelete("{id}")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -182,6 +202,12 @@ namespace NNews.API.Controllers
         {
             try
             {
+                var userSession = _userClient.GetUserInSession(HttpContext);
+                if (userSession == null)
+                {
+                    return Unauthorized("Not Authorized");
+                }
+
                 _categoryService.Delete(id);
                 return NoContent();
             }
