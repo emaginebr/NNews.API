@@ -45,7 +45,24 @@ namespace NNews.ACL
             return result ?? new PagedResult<ArticleInfo>();
         }
 
-        public async Task<PagedResult<ArticleInfo>> FilterAsync(IList<string>? roles = null, long? parentId = null, int page = 1, int pageSize = 10, CancellationToken cancellationToken = default)
+        public async Task<PagedResult<ArticleInfo>> ListByCategoryAsync(long categoryId, int page = 1, int pageSize = 10, CancellationToken cancellationToken = default)
+        {
+            var queryParams = new List<string>
+            {
+                $"categoryId={categoryId}",
+                $"page={page}",
+                $"pageSize={pageSize}"
+            };
+
+            var query = string.Join("&", queryParams);
+            var response = await _httpClient.GetAsync($"{BaseRoute}/ListByCategory?{query}", cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            var result = await response.Content.ReadFromJsonAsync<PagedResult<ArticleInfo>>(cancellationToken: cancellationToken);
+            return result ?? new PagedResult<ArticleInfo>();
+        }
+
+        public async Task<PagedResult<ArticleInfo>> ListByRolesAsync(int page = 1, int pageSize = 10, CancellationToken cancellationToken = default)
         {
             var queryParams = new List<string>
             {
@@ -53,18 +70,48 @@ namespace NNews.ACL
                 $"pageSize={pageSize}"
             };
 
-            if (roles != null && roles.Any())
-            {
-                queryParams.Add($"roles={string.Join(",", roles)}");
-            }
+            var query = string.Join("&", queryParams);
+            var response = await _httpClient.GetAsync($"{BaseRoute}/ListByRoles?{query}", cancellationToken);
+            response.EnsureSuccessStatusCode();
 
-            if (parentId.HasValue)
+            var result = await response.Content.ReadFromJsonAsync<PagedResult<ArticleInfo>>(cancellationToken: cancellationToken);
+            return result ?? new PagedResult<ArticleInfo>();
+        }
+
+        public async Task<PagedResult<ArticleInfo>> ListByTagAsync(string tagSlug, int page = 1, int pageSize = 10, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(tagSlug))
+                throw new ArgumentException("Tag slug cannot be empty", nameof(tagSlug));
+
+            var queryParams = new List<string>
             {
-                queryParams.Add($"parentId={parentId.Value}");
-            }
+                $"tagSlug={Uri.EscapeDataString(tagSlug)}",
+                $"page={page}",
+                $"pageSize={pageSize}"
+            };
 
             var query = string.Join("&", queryParams);
-            var response = await _httpClient.GetAsync($"{BaseRoute}/filter?{query}", cancellationToken);
+            var response = await _httpClient.GetAsync($"{BaseRoute}/ListByTag?{query}", cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            var result = await response.Content.ReadFromJsonAsync<PagedResult<ArticleInfo>>(cancellationToken: cancellationToken);
+            return result ?? new PagedResult<ArticleInfo>();
+        }
+
+        public async Task<PagedResult<ArticleInfo>> SearchAsync(string keyword, int page = 1, int pageSize = 10, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(keyword))
+                throw new ArgumentException("Keyword cannot be empty", nameof(keyword));
+
+            var queryParams = new List<string>
+            {
+                $"keyword={Uri.EscapeDataString(keyword)}",
+                $"page={page}",
+                $"pageSize={pageSize}"
+            };
+
+            var query = string.Join("&", queryParams);
+            var response = await _httpClient.GetAsync($"{BaseRoute}/Search?{query}", cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var result = await response.Content.ReadFromJsonAsync<PagedResult<ArticleInfo>>(cancellationToken: cancellationToken);
@@ -80,7 +127,7 @@ namespace NNews.ACL
             return result ?? throw new InvalidOperationException("Failed to deserialize article response");
         }
 
-        public async Task<ArticleInfo> CreateAsync(ArticleInfo article, CancellationToken cancellationToken = default)
+        public async Task<ArticleInfo> CreateAsync(ArticleInsertedInfo article, CancellationToken cancellationToken = default)
         {
             var response = await _httpClient.PostAsJsonAsync(BaseRoute, article, cancellationToken);
             response.EnsureSuccessStatusCode();
@@ -89,7 +136,7 @@ namespace NNews.ACL
             return result ?? throw new InvalidOperationException("Failed to deserialize created article response");
         }
 
-        public async Task<ArticleInfo> UpdateAsync(ArticleInfo article, CancellationToken cancellationToken = default)
+        public async Task<ArticleInfo> UpdateAsync(ArticleUpdatedInfo article, CancellationToken cancellationToken = default)
         {
             var response = await _httpClient.PutAsJsonAsync(BaseRoute, article, cancellationToken);
             response.EnsureSuccessStatusCode();

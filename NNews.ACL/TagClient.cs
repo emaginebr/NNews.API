@@ -33,6 +33,15 @@ namespace NNews.ACL
             return result ?? new List<TagInfo>();
         }
 
+        public async Task<IList<TagInfo>> ListByRolesAsync(CancellationToken cancellationToken = default)
+        {
+            var response = await _httpClient.GetAsync($"{BaseRoute}/ListByRoles", cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            var result = await response.Content.ReadFromJsonAsync<IList<TagInfo>>(cancellationToken: cancellationToken);
+            return result ?? new List<TagInfo>();
+        }
+
         public async Task<TagInfo> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             var response = await _httpClient.GetAsync($"{BaseRoute}/{id}", cancellationToken);

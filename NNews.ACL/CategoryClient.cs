@@ -33,14 +33,9 @@ namespace NNews.ACL
             return result ?? new List<CategoryInfo>();
         }
 
-        public async Task<IList<CategoryInfo>> FilterAsync(IList<string>? roles = null, long? parentId = null, CancellationToken cancellationToken = default)
+        public async Task<IList<CategoryInfo>> ListByParentAsync(long? parentId = null, CancellationToken cancellationToken = default)
         {
             var queryParams = new List<string>();
-
-            if (roles != null && roles.Any())
-            {
-                queryParams.Add($"roles={string.Join(",", roles)}");
-            }
 
             if (parentId.HasValue)
             {
@@ -48,7 +43,7 @@ namespace NNews.ACL
             }
 
             var query = queryParams.Any() ? $"?{string.Join("&", queryParams)}" : string.Empty;
-            var response = await _httpClient.GetAsync($"{BaseRoute}/filter{query}", cancellationToken);
+            var response = await _httpClient.GetAsync($"{BaseRoute}/listByParent{query}", cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var result = await response.Content.ReadFromJsonAsync<IList<CategoryInfo>>(cancellationToken: cancellationToken);

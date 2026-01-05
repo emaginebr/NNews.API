@@ -1,0 +1,818 @@
+===============================================================================
+NNEWS PACKAGES DOCUMENTATION - For AI Prompt Usage
+===============================================================================
+
+This documentation covers two NuGet packages from the NNews CMS system:
+1. NNews.DTO - Data Transfer Objects
+2. NNews.ACL - Anti-Corruption Layer (HTTP Client Library)
+
+Target Framework: .NET 8.0
+License: MIT
+Repository: https://github.com/landim32/NNews
+Version: 2.0.0
+
+===============================================================================
+PACKAGE 1: NNews.DTO
+===============================================================================
+
+DESCRIPTION:
+Data Transfer Objects (DTOs) for NNews CMS. Includes models for articles, 
+categories, tags, and AI-powered content generation with ChatGPT and DALL-E 3.
+
+INSTALLATION:
+dotnet add package NNews.DTO
+
+MAIN CLASSES:
+-------------------------------------------------------------------------------
+
+1. ArticleInfo
+-------------------------------------------------------------------------------
+Represents a news article with full metadata.
+
+Properties:
+- ArticleId (long): Unique identifier
+- CategoryId (long): Required. Category ID (must be > 0)
+- AuthorId (long?): Optional. Author identifier
+- ImageName (string?): Optional. Image filename (max 560 chars)
+- Title (string): Required. Article title (max 255 chars)
+- Content (string): Required. Article HTML/text content
+- Status (int): Required. 0=Draft, 1=Published, 2=Archived, 3=Scheduled
+- DateAt (DateTime): Required. Publication date
+- CreatedAt (DateTime): Creation timestamp
+- UpdatedAt (DateTime): Last update timestamp
+- Category (CategoryInfo?): Associated category object
+- Tags (List<TagInfo>): List of article tags
+- Roles (List<RoleInfo>): Access control roles
+
+Usage Example:
+var article = new ArticleInfo
+{
+    CategoryId = 1,
+    Title = "Breaking News",
+    Content = "<p>Article content here</p>",
+    Status = 1,
+    DateAt = DateTime.Now,
+    Tags = new List<TagInfo>()
+};
+
+-------------------------------------------------------------------------------
+
+2. ArticleInsertedInfo
+-------------------------------------------------------------------------------
+DTO for creating new articles.
+
+Properties:
+- CategoryId (long): Required. Category ID (must be > 0)
+- AuthorId (long?): Optional. Author identifier
+- ImageName (string?): Optional. Image filename (max 560 chars)
+- Title (string): Required. Article title (max 255 chars)
+- Content (string): Required. Article HTML/text content
+- Status (int): Required. 0=Draft, 1=Published, 2=Archived, 3=Scheduled
+- DateAt (DateTime): Required. Publication date
+- TagList (string): Comma-separated list of tag titles
+- Roles (List<string>): List of role names for access control
+
+Usage Example:
+var article = new ArticleInsertedInfo
+{
+    CategoryId = 1,
+    Title = "New Article",
+    Content = "<p>Content</p>",
+    Status = 1,
+    DateAt = DateTime.Now,
+    TagList = "AI,Technology,News",
+    Roles = new List<string> { "Public" }
+};
+
+-------------------------------------------------------------------------------
+
+3. ArticleUpdatedInfo
+-------------------------------------------------------------------------------
+DTO for updating existing articles.
+
+Properties:
+- ArticleId (long): Article ID to update
+- CategoryId (long): Required. Category ID (must be > 0)
+- AuthorId (long?): Optional. Author identifier
+- ImageName (string?): Optional. Image filename (max 560 chars)
+- Title (string): Required. Article title (max 255 chars)
+- Content (string): Required. Article HTML/text content
+- Status (int): Required. 0=Draft, 1=Published, 2=Archived, 3=Scheduled
+- DateAt (DateTime): Required. Publication date
+- TagList (string): Comma-separated list of tag titles
+- Roles (List<string>): List of role names for access control
+
+Usage Example:
+var article = new ArticleUpdatedInfo
+{
+    ArticleId = 123,
+    CategoryId = 1,
+    Title = "Updated Article",
+    Content = "<p>Updated content</p>",
+    Status = 1,
+    DateAt = DateTime.Now,
+    TagList = "AI,Technology",
+    Roles = new List<string> { "Public", "Premium" }
+};
+
+-------------------------------------------------------------------------------
+
+4. CategoryInfo
+-------------------------------------------------------------------------------
+Represents an article category with hierarchical support.
+
+Properties:
+- CategoryId (long): Unique identifier
+- ParentId (long?): Optional. Parent category for hierarchy
+- Title (string): Required. Category name (max 240 chars)
+- CreatedAt (DateTime): Creation timestamp
+- UpdatedAt (DateTime): Last update timestamp
+- ArticleCount (int): Number of articles in category
+
+Usage Example:
+var category = new CategoryInfo
+{
+    Title = "Technology",
+    ParentId = null
+};
+
+-------------------------------------------------------------------------------
+
+5. TagInfo
+-------------------------------------------------------------------------------
+Represents a content tag for article categorization.
+
+Properties:
+- TagId (long): Unique identifier
+- Title (string): Required. Tag name (max 120 chars)
+- Slug (string?): Optional. URL-friendly slug (max 120 chars)
+- ArticleCount (int): Number of articles with this tag
+
+Usage Example:
+var tag = new TagInfo
+{
+    Title = "AI",
+    Slug = "ai"
+};
+
+-------------------------------------------------------------------------------
+
+6. PagedResult<T>
+-------------------------------------------------------------------------------
+Generic pagination container for list results.
+
+Properties:
+- Items (IList<T>): List of items for current page
+- Page (int): Current page number (1-based)
+- PageSize (int): Items per page
+- TotalCount (int): Total number of items
+- TotalPages (int): Total number of pages
+- HasPrevious (bool): True if previous page exists
+- HasNext (bool): True if next page exists
+
+Usage Example:
+PagedResult<ArticleInfo> result = await client.GetAllAsync(page: 1, pageSize: 10);
+foreach (var article in result.Items)
+{
+    Console.WriteLine(article.Title);
+}
+
+-------------------------------------------------------------------------------
+
+7. RoleInfo
+-------------------------------------------------------------------------------
+Represents access control role.
+
+Properties:
+- RoleId (long): Unique identifier
+- RoleName (string): Role name
+
+-------------------------------------------------------------------------------
+
+8. NNewsSetting (Settings namespace)
+-------------------------------------------------------------------------------
+Configuration settings for NNews API connection.
+
+Properties:
+- ApiUrl (string): Base URL of NNews API
+
+Usage Example:
+services.Configure<NNewsSetting>(configuration.GetSection("NNews"));
+
+-------------------------------------------------------------------------------
+
+AI-RELATED DTOs (AI namespace):
+-------------------------------------------------------------------------------
+
+9. AIArticleRequest
+-------------------------------------------------------------------------------
+Request for AI-generated article creation and updates.
+
+Properties:
+- ArticleId (long?): Optional. Article ID for updates
+- Prompt (string): AI generation prompt/topic
+- GenerateImage (bool): Whether to generate DALL-E image
+
+-------------------------------------------------------------------------------
+
+10. AIArticleResponse
+-------------------------------------------------------------------------------
+Response containing AI-generated article.
+
+Properties:
+- Article (ArticleInfo): Generated article
+- GeneratedImage (bool): Whether image was generated
+
+-------------------------------------------------------------------------------
+
+11. AIArticleUpdateResponse
+-------------------------------------------------------------------------------
+Response for AI article update operations.
+
+Properties:
+- Article (ArticleInfo): Updated article
+- Message (string): Status message
+
+-------------------------------------------------------------------------------
+
+12. AICategorySummary
+-------------------------------------------------------------------------------
+Category information for AI operations.
+
+Properties:
+- CategoryId (long): Category identifier
+- Title (string): Category title
+
+===============================================================================
+PACKAGE 2: NNews.ACL
+===============================================================================
+
+DESCRIPTION:
+Anti-Corruption Layer (ACL) client library for NNews CMS API. Provides 
+strongly-typed HTTP clients for articles, categories, tags, images, and 
+AI-powered content generation using ChatGPT and DALL-E 3.
+
+INSTALLATION:
+dotnet add package NNews.ACL
+
+DEPENDENCIES:
+- NNews.DTO (>= 2.0.0)
+- Microsoft.AspNetCore.Http.Features (5.0.17)
+- Microsoft.Extensions.Configuration.Abstractions (9.0.0)
+- Microsoft.Extensions.Options (10.0.0)
+- Microsoft.IdentityModel.Tokens (8.15.0)
+
+CONFIGURATION:
+Add to appsettings.json:
+{
+  "NNews": {
+    "ApiUrl": "https://your-api-url.com"
+  }
+}
+
+Register in Program.cs:
+services.Configure<NNewsSetting>(configuration.GetSection("NNews"));
+services.AddHttpClient<IArticleClient, ArticleClient>();
+services.AddHttpClient<ICategoryClient, CategoryClient>();
+services.AddHttpClient<ITagClient, TagClient>();
+services.AddHttpClient<IImageClient, ImageClient>();
+services.AddHttpClient<IArticleAIClient, ArticleAIClient>();
+
+===============================================================================
+
+CLIENT INTERFACES:
+-------------------------------------------------------------------------------
+
+1. IArticleClient
+-------------------------------------------------------------------------------
+HTTP client for article operations.
+
+Methods:
+
+GetAllAsync(categoryId?, page, pageSize, cancellationToken)
+  Get paginated list of all articles (requires authentication).
+  Parameters:
+    - categoryId (long?): Optional category filter
+    - page (int): Page number (default: 1)
+    - pageSize (int): Items per page (default: 10)
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: PagedResult<ArticleInfo>
+  Endpoint: GET /api/Article
+
+ListByCategoryAsync(categoryId, page, pageSize, cancellationToken)
+  Get published articles filtered by category and user roles.
+  Parameters:
+    - categoryId (long): Required. Category ID
+    - page (int): Page number (default: 1)
+    - pageSize (int): Items per page (default: 10)
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: PagedResult<ArticleInfo>
+  Endpoint: GET /api/Article/ListByCategory
+
+ListByRolesAsync(page, pageSize, cancellationToken)
+  Get published articles filtered by user roles from session.
+  Parameters:
+    - page (int): Page number (default: 1)
+    - pageSize (int): Items per page (default: 10)
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: PagedResult<ArticleInfo>
+  Endpoint: GET /api/Article/ListByRoles
+
+ListByTagAsync(tagSlug, page, pageSize, cancellationToken)
+  Get published articles filtered by tag slug and user roles.
+  Parameters:
+    - tagSlug (string): Required. Tag slug
+    - page (int): Page number (default: 1)
+    - pageSize (int): Items per page (default: 10)
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: PagedResult<ArticleInfo>
+  Endpoint: GET /api/Article/ListByTag
+
+SearchAsync(keyword, page, pageSize, cancellationToken)
+  Search published articles by keyword in title and content.
+  Parameters:
+    - keyword (string): Required. Search keyword
+    - page (int): Page number (default: 1)
+    - pageSize (int): Items per page (default: 10)
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: PagedResult<ArticleInfo>
+  Endpoint: GET /api/Article/Search
+
+GetByIdAsync(id, cancellationToken)
+  Get single article by ID.
+  Parameters:
+    - id (int): Article ID
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: ArticleInfo
+  Endpoint: GET /api/Article/{id}
+
+CreateAsync(article, cancellationToken)
+  Create new article (requires authentication).
+  Parameters:
+    - article (ArticleInsertedInfo): Article data
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: ArticleInfo (created article with ID)
+  Endpoint: POST /api/Article
+
+UpdateAsync(article, cancellationToken)
+  Update existing article (requires authentication).
+  Parameters:
+    - article (ArticleUpdatedInfo): Article data with ID
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: ArticleInfo (updated article)
+  Endpoint: PUT /api/Article
+
+Usage Examples:
+
+// Get all articles (admin view)
+var articles = await articleClient.GetAllAsync(categoryId: 1, page: 1, pageSize: 20);
+
+// Get published articles by category (public view)
+var publicArticles = await articleClient.ListByCategoryAsync(categoryId: 1, page: 1, pageSize: 10);
+
+// Get articles filtered by user roles
+var roleArticles = await articleClient.ListByRolesAsync(page: 1, pageSize: 10);
+
+// Search articles
+var searchResults = await articleClient.SearchAsync("artificial intelligence", page: 1, pageSize: 10);
+
+// Get articles by tag
+var taggedArticles = await articleClient.ListByTagAsync("technology", page: 1, pageSize: 10);
+
+// Create article
+var newArticle = await articleClient.CreateAsync(new ArticleInsertedInfo 
+{ 
+    CategoryId = 1,
+    Title = "New Article",
+    Content = "<p>Content</p>",
+    Status = 1,
+    DateAt = DateTime.Now,
+    TagList = "AI,Tech",
+    Roles = new List<string> { "Public" }
+});
+
+-------------------------------------------------------------------------------
+
+2. ICategoryClient
+-------------------------------------------------------------------------------
+HTTP client for category operations.
+
+Methods:
+
+GetAllAsync(cancellationToken)
+  Get all categories (requires authentication).
+  Returns: IList<CategoryInfo>
+  Endpoint: GET /api/Category
+
+ListByParentAsync(parentId?, cancellationToken)
+  Get published categories filtered by parent and user roles.
+  Parameters:
+    - parentId (long?): Optional parent category ID
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: IList<CategoryInfo>
+  Endpoint: GET /api/Category/listByParent
+
+GetByIdAsync(id, cancellationToken)
+  Get single category by ID.
+  Parameters:
+    - id (int): Category ID
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: CategoryInfo
+  Endpoint: GET /api/Category/{id}
+
+CreateAsync(category, cancellationToken)
+  Create new category (requires authentication).
+  Parameters:
+    - category (CategoryInfo): Category data
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: CategoryInfo
+  Endpoint: POST /api/Category
+
+UpdateAsync(category, cancellationToken)
+  Update existing category (requires authentication).
+  Parameters:
+    - category (CategoryInfo): Category data with ID
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: CategoryInfo
+  Endpoint: PUT /api/Category
+
+DeleteAsync(id, cancellationToken)
+  Delete category (requires authentication).
+  Parameters:
+    - id (int): Category ID
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: Task
+  Endpoint: DELETE /api/Category/{id}
+
+Usage Examples:
+
+// Get all categories
+var categories = await categoryClient.GetAllAsync();
+
+// Get categories filtered by parent and roles
+var childCategories = await categoryClient.ListByParentAsync(parentId: 1);
+
+// Get root categories
+var rootCategories = await categoryClient.ListByParentAsync(parentId: null);
+
+// Create category
+var category = await categoryClient.CreateAsync(new CategoryInfo { Title = "Tech" });
+
+-------------------------------------------------------------------------------
+
+3. ITagClient
+-------------------------------------------------------------------------------
+HTTP client for tag operations.
+
+Methods:
+
+GetAllAsync(cancellationToken)
+  Get all tags (requires authentication).
+  Returns: IList<TagInfo>
+  Endpoint: GET /api/Tag
+
+ListByRolesAsync(cancellationToken)
+  Get tags from published articles filtered by user roles.
+  Parameters:
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: IList<TagInfo>
+  Endpoint: GET /api/Tag/ListByRoles
+
+GetByIdAsync(id, cancellationToken)
+  Get single tag by ID.
+  Parameters:
+    - id (int): Tag ID
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: TagInfo
+  Endpoint: GET /api/Tag/{id}
+
+CreateAsync(tag, cancellationToken)
+  Create new tag (requires authentication).
+  Parameters:
+    - tag (TagInfo): Tag data
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: TagInfo
+  Endpoint: POST /api/Tag
+
+UpdateAsync(tag, cancellationToken)
+  Update existing tag (requires authentication).
+  Parameters:
+    - tag (TagInfo): Tag data with ID
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: TagInfo
+  Endpoint: PUT /api/Tag
+
+DeleteAsync(id, cancellationToken)
+  Delete tag (requires authentication).
+  Parameters:
+    - id (int): Tag ID
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: Task
+  Endpoint: DELETE /api/Tag/{id}
+
+MergeTagsAsync(sourceTagId, targetTagId, cancellationToken)
+  Merge one tag into another (moves all articles from source to target).
+  Parameters:
+    - sourceTagId (long): Source tag ID (will be deleted)
+    - targetTagId (long): Target tag ID (will receive articles)
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: Task
+  Endpoint: POST /api/Tag/merge/{sourceTagId}/{targetTagId}
+
+Usage Examples:
+
+// Get all tags
+var tags = await tagClient.GetAllAsync();
+
+// Get tags filtered by roles
+var publicTags = await tagClient.ListByRolesAsync();
+
+// Create tag
+var newTag = await tagClient.CreateAsync(new TagInfo { Title = "AI" });
+
+// Merge tags
+await tagClient.MergeTagsAsync(sourceTagId: 5, targetTagId: 3);
+
+-------------------------------------------------------------------------------
+
+4. IImageClient
+-------------------------------------------------------------------------------
+HTTP client for image upload operations.
+
+Methods:
+
+UploadImageAsync(file, cancellationToken)
+  Upload image file to server (requires authentication).
+  Parameters:
+    - file (IFormFile): Image file from HTTP request
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: string (URL of uploaded image)
+  Endpoint: POST /api/Image/uploadImage
+
+Usage Example:
+var imageUrl = await imageClient.UploadImageAsync(file);
+article.ImageName = imageUrl;
+
+-------------------------------------------------------------------------------
+
+5. IArticleAIClient
+-------------------------------------------------------------------------------
+HTTP client for AI-powered article generation using ChatGPT and DALL-E 3.
+
+Methods:
+
+CreateWithAIAsync(prompt, generateImage, cancellationToken)
+  Generate new article using AI based on prompt (requires authentication).
+  Parameters:
+    - prompt (string): Generation prompt/topic
+    - generateImage (bool): Whether to generate DALL-E image (default: false)
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: ArticleInfo
+  Endpoint: POST /api/Article/insertWithAI
+
+UpdateWithAIAsync(articleId, prompt, generateImage, cancellationToken)
+  Regenerate/update article content using AI (requires authentication).
+  Parameters:
+    - articleId (int): Article ID to update
+    - prompt (string): Regeneration prompt
+    - generateImage (bool): Whether to generate new image (default: false)
+    - cancellationToken (CancellationToken): Cancellation token
+  Returns: ArticleInfo
+  Endpoint: PUT /api/Article/updateWithAI
+
+Usage Examples:
+
+// Generate new article with AI
+var article = await articleAIClient.CreateWithAIAsync(
+    "Write an article about the future of AI", 
+    generateImage: true
+);
+
+// Update article with AI
+var updatedArticle = await articleAIClient.UpdateWithAIAsync(
+    articleId: 123,
+    "Rewrite this article with more technical details",
+    generateImage: false
+);
+
+===============================================================================
+
+COMMON USAGE PATTERNS:
+-------------------------------------------------------------------------------
+
+1. Pagination Pattern:
+var page = 1;
+PagedResult<ArticleInfo> result;
+do
+{
+    result = await articleClient.ListByRolesAsync(page: page, pageSize: 50);
+    foreach (var article in result.Items)
+    {
+        // Process article
+    }
+    page++;
+} while (result.HasNext);
+
+2. Create Article with Tags:
+var article = new ArticleInsertedInfo
+{
+    CategoryId = 1,
+    Title = "My Article",
+    Content = "<p>Content here</p>",
+    Status = 1,
+    DateAt = DateTime.Now,
+    TagList = "AI,Technology,News",
+    Roles = new List<string> { "Public", "Premium" }
+};
+var created = await articleClient.CreateAsync(article);
+
+3. Update Article:
+var article = new ArticleUpdatedInfo
+{
+    ArticleId = 123,
+    CategoryId = 1,
+    Title = "Updated Article",
+    Content = "<p>Updated content</p>",
+    Status = 1,
+    DateAt = DateTime.Now,
+    TagList = "AI,Technology",
+    Roles = new List<string> { "Public" }
+};
+var updated = await articleClient.UpdateAsync(article);
+
+4. AI Article Generation:
+var article = await articleAIClient.CreateWithAIAsync(
+    "Climate change solutions for 2024", 
+    generateImage: true
+);
+
+5. Filter Articles by Category (Public View):
+var articles = await articleClient.ListByCategoryAsync(
+    categoryId: 5,
+    page: 1,
+    pageSize: 20
+);
+
+6. Search Articles:
+var searchResults = await articleClient.SearchAsync(
+    keyword: "artificial intelligence",
+    page: 1,
+    pageSize: 10
+);
+
+7. Category Hierarchy:
+var parentCategory = await categoryClient.CreateAsync(new CategoryInfo 
+{ 
+    Title = "News" 
+});
+var childCategories = await categoryClient.ListByParentAsync(parentCategory.CategoryId);
+
+8. Upload Image and Create Article:
+var imageUrl = await imageClient.UploadImageAsync(file);
+var article = await articleClient.CreateAsync(new ArticleInsertedInfo
+{
+    CategoryId = 1,
+    Title = "Article with Image",
+    Content = "<p>Content</p>",
+    ImageName = imageUrl,
+    Status = 1,
+    DateAt = DateTime.Now,
+    TagList = "News"
+});
+
+===============================================================================
+
+ERROR HANDLING:
+-------------------------------------------------------------------------------
+
+All client methods may throw:
+- HttpRequestException: Network or HTTP errors
+- JsonException: Invalid response format
+- TimeoutException: Request timeout
+- ArgumentException: Invalid parameters
+- InvalidOperationException: Failed to deserialize response
+
+Recommended pattern:
+try
+{
+    var article = await articleClient.GetByIdAsync(123);
+}
+catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+{
+    // Handle not found
+    Console.WriteLine("Article not found");
+}
+catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
+{
+    // Handle authentication error
+    Console.WriteLine("Not authorized");
+}
+catch (HttpRequestException ex)
+{
+    // Handle other API communication errors
+    Console.WriteLine($"API Error: {ex.Message}");
+}
+catch (ArgumentException ex)
+{
+    // Handle validation errors
+    Console.WriteLine($"Validation Error: {ex.Message}");
+}
+catch (Exception ex)
+{
+    // Handle other errors
+    Console.WriteLine($"Error: {ex.Message}");
+}
+
+===============================================================================
+
+BEST PRACTICES:
+-------------------------------------------------------------------------------
+
+1. Use CancellationToken for long-running operations
+2. Handle pagination properly for large datasets
+3. Validate DTOs before sending to API (use DataAnnotations)
+4. Configure HttpClient timeout appropriately
+5. Use dependency injection for client interfaces
+6. Cache frequently accessed data (categories, tags)
+7. Use AI generation sparingly (API rate limits may apply)
+8. Always specify article Status when creating/updating
+9. Upload images before creating articles with ImageName
+10. Use role-based filtering for public-facing endpoints
+11. Use ListByRolesAsync/ListByCategoryAsync for public views
+12. Use GetAllAsync only for admin/authenticated views
+13. Use SearchAsync for keyword-based article discovery
+14. Use ListByTagAsync to display articles by specific tags
+15. Handle authentication tokens properly in HttpClient configuration
+
+===============================================================================
+
+ARTICLE STATUS VALUES:
+-------------------------------------------------------------------------------
+0 = Draft       - Article is being worked on
+1 = Published   - Article is live and visible
+2 = Archived    - Article is archived/hidden
+3 = Scheduled   - Article is scheduled for future publication
+
+===============================================================================
+
+AUTHENTICATION:
+-------------------------------------------------------------------------------
+
+The ACL clients support JWT token authentication. Most endpoints require 
+authentication. Configure in HttpClient:
+
+services.AddHttpClient<IArticleClient, ArticleClient>()
+    .ConfigureHttpClient((sp, client) =>
+    {
+        var token = sp.GetRequiredService<ITokenService>().GetToken();
+        client.DefaultRequestHeaders.Authorization = 
+            new AuthenticationHeaderValue("Bearer", token);
+    });
+
+ENDPOINTS REQUIRING AUTHENTICATION:
+- All POST, PUT, DELETE operations
+- GET /api/Article (GetAllAsync)
+- GET /api/Category (GetAllAsync)
+- GET /api/Tag (GetAllAsync)
+- POST /api/Image/uploadImage
+
+PUBLIC ENDPOINTS (NO AUTH REQUIRED):
+- GET /api/Article/ListByCategory
+- GET /api/Article/ListByRoles
+- GET /api/Article/ListByTag
+- GET /api/Article/Search
+- GET /api/Article/{id}
+- GET /api/Category/listByParent
+- GET /api/Category/{id}
+- GET /api/Tag/ListByRoles
+- GET /api/Tag/{id}
+
+===============================================================================
+
+VERSIONING:
+-------------------------------------------------------------------------------
+
+Current Version: 2.0.0
+Breaking Changes from v1.x:
+- Updated to .NET 8.0
+- Enhanced AI capabilities
+- New pagination support
+- Role-based access control
+- Separate DTOs for insert/update operations (ArticleInsertedInfo, ArticleUpdatedInfo)
+- New search and filtering endpoints
+- Replaced FilterAsync with specific methods (ListByCategory, ListByRoles, etc.)
+
+===============================================================================
+
+SUPPORT AND RESOURCES:
+-------------------------------------------------------------------------------
+
+GitHub: https://github.com/landim32/NNews
+Issues: https://github.com/landim32/NNews/issues
+License: MIT
+NuGet: https://www.nuget.org/packages/NNews.ACL
+       https://www.nuget.org/packages/NNews.DTO
+
+===============================================================================
+END OF DOCUMENTATION
+===============================================================================
