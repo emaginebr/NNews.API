@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker rm:*)",
+      "Bash(git remote set-url:*)",
+      "Skill(doc-controller)",
+      "Skill(doc-controller:*)",
+      "Bash(dir:*)",
+      "Bash(unzip:*)",
+      "Bash(dotnet ef:*)",
+      "Bash(dotnet add:*)"
+    ]
+  }
+}
