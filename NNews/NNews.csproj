@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- NuGet Package Metadata -->
+    <PackageId>NNews</PackageId>
+    <Version>2.0.0</Version>
+    <Authors>NNews Team</Authors>
+    <Company>NNews</Company>
+    <Product>NNews Content Management System</Product>
+    <Description>DTOs and HTTP client library (ACL) for NNews CMS. Includes models for articles, categories, tags, AI-powered content generation with ChatGPT and DALL-E 3, and strongly-typed HTTP clients for consuming the NNews API.</Description>
+    <PackageTags>nnews;cms;dto;acl;client;api;articles;ai;chatgpt;dalle;content-management;http-client</PackageTags>
+    <PackageProjectUrl>https://github.com/landim32/NNews.API</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/landim32/NNews.API</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Copyright>Copyright (c) 2026 NNews Team</Copyright>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.15.0" />
+  </ItemGroup>
+
+</Project>

@@ -34,7 +34,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NNews.Domain\NNews.Domain.csproj" />
-    <PackageReference Include="NNews.DTO" Version="0.2.2" />
+    <ProjectReference Include="..\NNews\NNews.csproj" />
     <ProjectReference Include="..\NNews.Infra.Interfaces\NNews.Infra.Interfaces.csproj" />
   </ItemGroup>
 
